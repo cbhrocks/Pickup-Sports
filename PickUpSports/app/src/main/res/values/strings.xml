@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">PickUpSports</string>
+    <string name="hello_world">Hello world!</string>
+    <string name="action_settings">Settings</string>
+    <string name="title_activity_profile">ProfileActivity</string>
+
+    <!-- Profile Activity-->
+    <string name="text_view_name">Name</string>
+    <string name="text_view_email">Email</string>
+    <string name="text_view_phone_number">Phone Number</string>
+    <string name="title_activity_create_event">CreateEventActivity</string>
+    <!-- Profile Activity-->
+
+    <!-- Create Event Activity-->
+    <string name="spinner_sport">Choose a Sport</string>
+    <string name="button_date">Set Date</string>
+    <string name="button_time">Set Time</string>
+    <string name="edit_text_address">Address</string>
+    <string name="edit_text_city">City</string>
+    <string name="spinner_state">State</string>
+    <string name="edit_text_zip">Zip Code</string>
+    <string name="button_post">Post</string>
+    <string name="button_cancel">Cancel</string>
+
+</resources>
