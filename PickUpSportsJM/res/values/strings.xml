@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">PickUpSports</string>
+    <string name="hello_world">Hello world!</string>
+    <string name="title_activity_search_list">Search for events!</string>
+    <string name="set_filters_string">Set Filters</string>
+    <string name="change_location_string">Change Location</string>
+    <string name="set_radius_string">Set Radius</string>
+	<string name="help_string">Help</string>
+	<string name="about_message">Pickup Sports searches for local games histedc by the community in your area. Filter which sports you are interested in, set the location of where you want to play, with a radius to search given in miles.</string>
+	<string name="about_title">About Pickup Sports</string>
+	<string name="cancel_string">Cancel</string>
+	<string name="soccer">Soccer</string>
+	<string name="football">Football</string>
+	<string name="table_tennis">Table Tennis</string>
+	<string name="tennis">Tennis</string>
+	<string name="baseball">Baseball</string>
+	<string name="basketball">Basketball</string>
+	<string name="golf">Golf</string>
+	<string name="volleyball">Volleyball</string>
+	<string name="event_detail">Event Details</string>
+	<string name="event_accept">I\'m There!</string>
+	<string name="event_decline">I\'m Not Going!</string>
+	
+	
+</resources>

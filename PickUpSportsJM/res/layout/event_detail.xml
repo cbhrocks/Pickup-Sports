@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical" >
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:text="@string/event_detail"
+        android:textSize="20sp" />
+
+    <TextView
+        android:id="@+id/detail_sport"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_margin="10dp"
+        android:text="SPORT"
+        android:textSize="16sp" />
+
+    <TextView
+        android:id="@+id/detail_desc"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="left"
+        android:layout_margin="10dp"
+        android:text="DESCRIPTION"
+        android:textSize="16sp" />
+
+    <TextView
+        android:id="@+id/detail_avail"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="left"
+        android:layout_margin="10dp"
+        android:text="AVAILABILITY"
+        android:textSize="16sp" />
+
+    <TextView
+        android:id="@+id/detail_date"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="left"
+        android:layout_margin="10dp"
+        android:text="DATE"
+        android:textSize="16sp" />
+
+    <TextView
+        android:id="@+id/detail_loc"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="left"
+        android:layout_margin="10dp"
+        android:text="LOCATION"
+        android:textSize="16sp" />
+
+</LinearLayout>

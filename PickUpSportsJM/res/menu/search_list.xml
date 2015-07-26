@@ -1,0 +1,36 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context="edu.rosehulman.pickupsports.SearchListActivity" >
+
+    <item
+        android:id="@+id/add_new_event_button"
+        android:orderInCategory="100"
+        android:showAsAction="always"
+        android:icon="@drawable/add_icon"
+        />
+     <item
+        android:id="@+id/set_filters"
+        android:orderInCategory="100"
+        android:showAsAction="never"
+        android:title="@string/set_filters_string"
+        />
+      <item
+        android:id="@+id/change_location"
+        android:orderInCategory="100"
+        android:showAsAction="never"
+        android:title="@string/change_location_string"
+        />
+       <item
+        android:id="@+id/set_radius"
+        android:orderInCategory="100"
+        android:showAsAction="never"
+         android:title="@string/set_radius_string"
+        />
+        <item
+        android:id="@+id/help"
+        android:orderInCategory="100"
+        android:showAsAction="never"
+         android:title="@string/help_string"
+        />
+
+</menu>
