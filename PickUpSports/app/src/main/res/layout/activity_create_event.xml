@@ -13,7 +13,8 @@
         android:id="@+id/spinner"
         android:layout_alignParentTop="true"
         android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true" />
+        android:layout_alignParentStart="true"
+        android:entries="@array/sport_list"/>
 
     <Button
         android:layout_width="wrap_content"
@@ -59,6 +60,8 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/spinnerState"
+        android:entries="@array/spinner_states_list"
+        android:prompt="@string/football"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
         android:layout_alignRight="@+id/buttonTime"
@@ -82,16 +85,17 @@
         android:text="@string/button_post"
         android:id="@+id/buttonPost"
         android:layout_below="@+id/spinnerState"
-        android:layout_centerHorizontal="true" />
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="40dp"/>
 
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/button_post"
+        android:text="@string/button_cancel"
         android:id="@+id/buttonCancel"
-        android:layout_alignParentBottom="true"
+        android:layout_below="@id/buttonPost"
         android:layout_alignLeft="@+id/buttonPost"
         android:layout_alignStart="@+id/buttonPost"
-        android:layout_marginBottom="43dp" />
+        android:layout_marginTop="40dp" />
 
 </RelativeLayout>

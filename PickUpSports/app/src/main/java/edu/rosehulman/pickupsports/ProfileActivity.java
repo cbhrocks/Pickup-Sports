@@ -4,9 +4,17 @@ import android.app.Activity;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.FrameLayout;
+import android.widget.TabHost;
+import android.widget.TabWidget;
+import android.widget.TextView;
 
 
 public class ProfileActivity extends Activity {
+    private TabHost mTabHost;
+    private TabWidget mTabWidget;
+    private FrameLayout mFrameLayoutTabs;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -14,6 +22,40 @@ public class ProfileActivity extends Activity {
         setContentView(R.layout.activity_profile);
 
         getActionBar().setDisplayHomeAsUpEnabled(true);
+
+        mTabHost = (TabHost) findViewById(R.id.tabHost);
+        mTabHost.setup();
+
+        mTabWidget = mTabHost.getTabWidget();
+        mFrameLayoutTabs = mTabHost.getTabContentView();
+
+        TextView[] originalTextViews = new TextView[mTabWidget.getTabCount()];
+        for (int i = 0; i < mTabWidget.getTabCount(); i++){
+            originalTextViews[i] = (TextView) mTabWidget.getChildTabViewAt(i);
+        }
+        mTabWidget.removeAllViews();
+
+        for (int i = 0; i < mFrameLayoutTabs.getChildCount(); i++){
+            mFrameLayoutTabs.getChildAt(i).setVisibility(View.GONE);
+        }
+
+        for (int i = 0; i < originalTextViews.length; i++){
+            final TextView tabWidgetTextView = originalTextViews[i];
+            final View tabContentView = mFrameLayoutTabs.getChildAt(i);
+            TabHost.TabSpec tabSpec = mTabHost.newTabSpec((String) tabWidgetTextView.getTag());
+            tabSpec.setContent(new TabHost.TabContentFactory() {
+                @Override
+                public View createTabContent(String tag) {
+                    return tabContentView;
+                }
+            });
+            if (tabWidgetTextView.getBackground() == null){
+                tabSpec.setIndicator(tabWidgetTextView.getText());
+            } else {
+                tabSpec.setIndicator(tabWidgetTextView.getText(), tabWidgetTextView.getBackground());
+            }
+            mTabHost.addTab(tabSpec);
+        }
     }
 
     @Override
