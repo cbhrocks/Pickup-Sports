@@ -2,40 +2,42 @@ package edu.rosehulman.pickupsports;
 
 import java.util.ArrayList;
 
+import com.appspot.pickupsports_copy.pickupsports.model.Sport;
+
 import android.content.Context;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 public class ListAdapter extends BaseAdapter {
 	private Context mContext;
-	private ArrayList<SportEvent> sports;
+	private ArrayList<Sport> sports;
 
-	public ListAdapter(Context context, ArrayList<SportEvent> sports) {
+	public ListAdapter(Context context, ArrayList<Sport> sports) {
 		mContext = context;
 		this.sports=sports;
 	}
 
 	@Override
 	public int getCount() {
-		// TODO Auto-generated method stub
+
 		return sports.size();
 	}
 
 	@Override
 	public Object getItem(int position) {
-		// TODO Auto-generated method stub
+
 		return sports.get(position);
 	}
 
 	@Override
 	public long getItemId(int position) {
-		// TODO Auto-generated method stub
-		return sports.get(position).getId();
+
+		return 0;
 	}
 
 	@Override
 	public View getView(int position, View convertView, ViewGroup parent) {
-		// TODO Auto-generated method stub
+
 		RowView view;
 		if (convertView == null) {
 			view = new RowView(mContext);
@@ -44,15 +46,20 @@ public class ListAdapter extends BaseAdapter {
 			view = (RowView) convertView;
 		}
 		
-		view.setLeftText(sports.get(position).getSport());
-		view.setRightText(sports.get(position).getDistance());
-		if (sports.get(position).isInterested()) {
-			view.setBack(true);
-		}else{
-			view.setBack(false);
-		}
+		view.setLeftText(sports.get(position).getName());
+		view.setRightText(getDistance(sports.get(position).getLocation()));
+		//TODO Re-implement interest
+//		if (sports.get(position).isInterested()) {
+//			view.setBack(true);
+//		}else{
+//			view.setBack(false);
+//		}
 		return view;
 	}
 
+	//TODO Get distance from current location to address of sport
+	private String getDistance(String location){
+		return "15";
+	}
 	
 }

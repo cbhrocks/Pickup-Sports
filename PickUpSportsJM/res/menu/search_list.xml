@@ -8,29 +8,30 @@
         android:showAsAction="always"
         android:icon="@drawable/add_icon"
         />
-     <item
+    <item
         android:id="@+id/set_filters"
         android:orderInCategory="100"
         android:showAsAction="never"
-        android:title="@string/set_filters_string"
-        />
-      <item
+        android:title="@string/set_filters_string" />
+    <item
         android:id="@+id/change_location"
         android:orderInCategory="100"
         android:showAsAction="never"
-        android:title="@string/change_location_string"
-        />
-       <item
+        android:title="@string/change_location_string" />
+    <item
         android:id="@+id/set_radius"
         android:orderInCategory="100"
         android:showAsAction="never"
-         android:title="@string/set_radius_string"
-        />
-        <item
+        android:title="@string/set_radius_string" />
+    <item
         android:id="@+id/help"
         android:orderInCategory="100"
         android:showAsAction="never"
-         android:title="@string/help_string"
-        />
+        android:title="@string/help_string" />
+    <item
+        android:id="@+id/profile"
+        android:orderInCategory="101"
+        android:showAsAction="never"
+        android:title="@string/title_activity_profile" />
 
 </menu>

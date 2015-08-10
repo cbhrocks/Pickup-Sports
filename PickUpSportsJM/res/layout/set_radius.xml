@@ -12,8 +12,10 @@
         android:textSize="20sp" />
     
      <EditText
+        android:id="@+id/set_rad_edit_text"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:inputType="number"
         android:layout_gravity="center"/>
     
 
