@@ -15,6 +15,9 @@
 # limitations under the License.
 #
 import webapp2
+from google.appengine.ext import ndb
+
+PARENT_PROFILE_KEY = ndb.Key("Entity", 'profile_root')
 
 class MainHandler(webapp2.RequestHandler):
     def get(self):
