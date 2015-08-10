@@ -6,8 +6,7 @@ Created on Aug 9, 2015
 import endpoints
 import protorpc
 
-from models import Profile
-import models
+from models import Profile, Sport
 import main
 
 @endpoints.api(name="pickupsports", version="v1", description="Pickup Sports API")
@@ -50,5 +49,30 @@ class PickupSportsApi(protorpc.remote.Service):
          
         request.key.delete()
         return Profile(quote="deleted")
+    
+
+    @Sport.query_method(query_fields=("limit", "order", "pageToken"), name="sport.list", path="pickupsports/sport/list", http_method="GET")
+    def sport_list(self, query):
+        return query
+    
+    
+    @Sport.method(name="sport.insert", path="pickupsports/sport/insert", http_method="POST")
+    def sport_insert(self, request):
+        if request.from_datastore:
+            newSport = request
+        else:
+            newSport = Sport(parent=main.PARENT_PROFILE_KEY, name=request.name, description=request.description, availability=request.availability, location=request.location)
+        newSport.put()
+        return newSport
+    
+    
+    @Sport.method(request_fields=("entityKey",), name="sport.delete", path="pickupsports/sport/delete/{entityKey}", http_method="DELETE")
+    def sport_delete(self, request):
+        if not request.from_datastore:
+            raise endpoints.NotFoundException("sport not found")
+        request.key.delete()
+        
+        return Sport(name="deleted")
+    
     
 app = endpoints.api_server([PickupSportsApi], restricted = False)    
