@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import com.appspot.pickupsports_copy.pickupsports.model.Sport;
 
 import android.content.Context;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
@@ -47,7 +48,7 @@ public class ListAdapter extends BaseAdapter {
 		}
 		
 		view.setLeftText(sports.get(position).getName());
-		view.setRightText(getDistance(sports.get(position).getLocation()));
+		view.setRightText(getDistance(sports.get(position).getLatLon()));
 		//TODO Re-implement interest
 //		if (sports.get(position).isInterested()) {
 //			view.setBack(true);
@@ -59,7 +60,13 @@ public class ListAdapter extends BaseAdapter {
 
 	//TODO Get distance from current location to address of sport
 	private String getDistance(String location){
-		return "15";
+		int dist =  SearchListActivity.getDistance(location);
+		if (dist == 0) {
+			return "< 1 Mile Away";
+		}else if (dist == 1) {
+			return "1 Mile Away";
+		}else{
+			return dist + " Miles Away";
+		}
 	}
-	
 }
