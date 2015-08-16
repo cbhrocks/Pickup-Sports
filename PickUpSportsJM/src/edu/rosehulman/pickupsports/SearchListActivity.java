@@ -1,8 +1,18 @@
 package edu.rosehulman.pickupsports;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
+
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import com.appspot.pickupsports_copy.pickupsports.Pickupsports;
 import com.appspot.pickupsports_copy.pickupsports.model.Sport;
@@ -14,9 +24,13 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.DialogFragment;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.DialogInterface.OnMultiChoiceClickListener;
 import android.content.Intent;
+import android.location.Location;
+import android.location.LocationManager;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
@@ -33,13 +47,19 @@ import android.widget.AdapterView.OnItemLongClickListener;
 import android.widget.Toast;
 
 public class SearchListActivity extends Activity {
-	
+
+	public static final double RADIUS = 6327.8;
+	public static final double TO_MILES = 0.62137;
+	public static double lat;
+	public static double lon;
+	public final static String BASE_URL = "https://maps.googleapis.com/maps/api/geocode/json";
 	List<Sport> events;
 	ListAdapter adapter;
 	ListView lv;
 	Sport currentEvent;
 	int radius = 30;
-	
+	List<String> filters = new ArrayList<String>();
+	List<Boolean> enabledFilters = new ArrayList<Boolean>();
 	private Pickupsports mService;
 	
 	@Override
@@ -48,7 +68,10 @@ public class SearchListActivity extends Activity {
 		setContentView(R.layout.activity_search_list);
 		lv = (ListView) findViewById(R.id.list_view);
 		events = new ArrayList<Sport>();
-		
+		loadFilters();
+		double[] gps = getGPSLoc();
+		lat=gps[0];
+		lon=gps[1];
 		lv.setOnItemLongClickListener(new OnItemLongClickListener() {
 
 			@Override
@@ -85,6 +108,18 @@ public class SearchListActivity extends Activity {
 	}
 
 
+	private void loadFilters() {
+
+		
+		String[] arr = getResources().getStringArray(R.array.sport_list);
+		for (int i = 0; i < arr.length; i++) {
+			this.filters.add(arr[i]);
+			this.enabledFilters.add(true);
+		}
+		
+	}
+
+
 	@Override
 	protected void onRestart(){
 		super.onRestart();
@@ -92,28 +127,7 @@ public class SearchListActivity extends Activity {
 	}
 
 
-	//demo method
 	private void loadList() {
-		
-		
-		//Demo Purposes Only
-		
-//		String sampleDescription = "This is a string that will house the description of the event, stating extra information that the user wants to share, such as certain rules, variations, etc.";
-//		SportEvent s1 = new SportEvent(1, "Soccer", sampleDescription, null, null, "Anyone");
-//		SportEvent s2 = new SportEvent(2, "FootBall", sampleDescription, null, null, "Only cool KidZ");
-//		SportEvent s3 = new SportEvent(3, "Frisbee", sampleDescription, null, null, "Anyone");
-//		SportEvent s4 = new SportEvent(4, "Soccer", sampleDescription, null, null, "Anyone");
-//		SportEvent s5 = new SportEvent(5, "Tennis", sampleDescription, null, null, "Residents of cherry street");
-//		SportEvent s6 = new SportEvent(6, "Rocket League", sampleDescription, null, null, "Anyone who is awesome");
-//		
-//		events.add(s1);
-//		events.add(s2);
-//		events.add(s3);
-//		events.add(s4);
-//		events.add(s5);
-//		events.add(s6);
-//		adapter = new ListAdapter(this,events);
-//		lv.setAdapter(adapter);
 		
 		(new QueryForEventsTask()).execute();
 	}
@@ -124,12 +138,6 @@ public class SearchListActivity extends Activity {
 			adapter.notifyDataSetChanged();
 			lv.setAdapter(adapter);
 		} 
-
-
-
-
-
-
 
 	//menu
 	@Override
@@ -148,8 +156,6 @@ public class SearchListActivity extends Activity {
 	
 		switch (id) {
 		case R.id.add_new_event_button:
-			Toast.makeText(this,
-					"Link to Create new Event Here", Toast.LENGTH_LONG).show();
 			Intent intent = new Intent(this, CreateEventActivity.class);
 			startActivity(intent);
 			break;
@@ -194,7 +200,16 @@ public class SearchListActivity extends Activity {
 				((TextView) view.findViewById(R.id.detail_sport)).setText(SearchListActivity.this.currentEvent.getName());
 				((TextView) view.findViewById(R.id.detail_desc)).setText(SearchListActivity.this.currentEvent.getDescription());
 				((TextView) view.findViewById(R.id.detail_avail)).setText(SearchListActivity.this.currentEvent.getAvailability());
-				((TextView) view.findViewById(R.id.detail_date)).setText(SearchListActivity.this.currentEvent.getDate());
+				String dateTime =SearchListActivity.this.currentEvent.getDate();
+				String date = dateTime.split("T")[0];
+				String year = date.split("-")[0];
+				int month = Integer.parseInt(date.split("-")[1]) + 1;
+				String day = date.split("-")[2];
+				date = year + "-" +  month + "-" + day;
+				String time = dateTime.split("T")[1];
+				time = time.split(":")[0] + ":" + time.split(":")[1];
+				dateTime = date + " " + time;
+				((TextView) view.findViewById(R.id.detail_date)).setText(dateTime);
 				((TextView) view.findViewById(R.id.detail_loc)).setText(SearchListActivity.this.currentEvent.getLocation());
 				builder.setView(view);
 				builder.setNegativeButton(R.string.cancel_string,
@@ -205,23 +220,18 @@ public class SearchListActivity extends Activity {
 								dismiss();
 							}
 						});
-				
-//				if (SearchListActivity.this.currentEvent.isInterested()) {
-//					builder.setPositiveButton(R.string.event_decline,
-//							new DialogInterface.OnClickListener() {
-//								@Override
-//								public void onClick(DialogInterface dialog,
-//										int which) {
-//									Toast.makeText(SearchListActivity.this,
-//											"Not Interesting!", Toast.LENGTH_LONG).show();
-//									
-//									SearchListActivity.this.toggleInterest();
-//									SearchListActivity.this.reload();
-//									dismiss();
-//								}
-//							});
-//					return builder.create();
-//				}else{
+				builder.setNeutralButton("Get Directions!", new DialogInterface.OnClickListener() {
+							@Override
+							public void onClick(DialogInterface dialog,
+									int which) {
+								String destLat = currentEvent.getLatLon().split(":")[0];
+								String destLon = currentEvent.getLatLon().split(":")[1];
+								Intent intent = new Intent(android.content.Intent.ACTION_VIEW, 
+									    Uri.parse("http://maps.google.com/maps?saddr=" + lat + "," + lon + "&daddr=" + destLat + "," + destLon));
+									startActivity(intent);
+								
+							}
+						});
 				builder.setPositiveButton(R.string.event_accept,
 						new DialogInterface.OnClickListener() {
 							@Override
@@ -236,7 +246,6 @@ public class SearchListActivity extends Activity {
 							}
 						});
 				return builder.create();
-//			}
 			}
 		};
 		
@@ -266,33 +275,29 @@ public class SearchListActivity extends Activity {
 				AlertDialog.Builder builder = new AlertDialog.Builder(
 						getActivity());
 				builder.setTitle(R.string.set_filters_string);
-				builder.setMultiChoiceItems(R.array.sport_list,new boolean[]{true, true, true, true, true, true, true, true}, new OnMultiChoiceClickListener() {
+				boolean[] array = new boolean[enabledFilters.size()];
+				for (int i = 0; i < enabledFilters.size(); i++) {
+					array[i] = enabledFilters.get(i);
+				}
+				builder.setMultiChoiceItems(R.array.sport_list,array, new OnMultiChoiceClickListener() {
 					
 
 					@Override
 					public void onClick(DialogInterface dialog, int which,
 							boolean isChecked) {
-						String s = getResources().getStringArray(R.array.sport_list)[which];
-						Toast.makeText(getApplicationContext(), (isChecked ? "Yeah for " : "Boo for ") + s + "!", Toast.LENGTH_LONG).show();
+						enabledFilters.set(which, isChecked);
 						
 					}
 				});
-				builder.setNegativeButton(R.string.cancel_string,
-						new DialogInterface.OnClickListener() {
-							@Override
-							public void onClick(DialogInterface dialog,
-									int which) {
-								dismiss();
-							}
-						});
 				builder.setPositiveButton(android.R.string.ok,
 						new DialogInterface.OnClickListener() {
 							@Override
 							public void onClick(DialogInterface dialog,
 									int which) {
 								Toast.makeText(SearchListActivity.this,
-										"You are good at setting filters", Toast.LENGTH_LONG).show();
+										"Filters Set!", Toast.LENGTH_LONG).show();
 								dismiss();
+								loadList();
 							}
 						});
 				return builder.create();
@@ -349,6 +354,7 @@ public class SearchListActivity extends Activity {
 						getActivity());
 				LayoutInflater inflater = getActivity().getLayoutInflater();
 				View view = inflater.inflate(R.layout.change_location, null);
+				final EditText address = (EditText) view.findViewById(R.id.set_loc_edit_text);
 				builder.setView(view);
 				builder.setNegativeButton(R.string.cancel_string,
 						new DialogInterface.OnClickListener() {
@@ -363,8 +369,7 @@ public class SearchListActivity extends Activity {
 							@Override
 							public void onClick(DialogInterface dialog,
 									int which) {
-								Toast.makeText(SearchListActivity.this,
-										"You are good at setting locations", Toast.LENGTH_LONG).show();
+								(new GenerateLatLon()).execute(address.getText().toString());
 								dismiss();
 							}
 						});
@@ -426,7 +431,7 @@ public class SearchListActivity extends Activity {
 				events.clear();
 				List<Sport> allResults = result.getItems();
 				for (Sport sport : allResults) {
-					if(getDistance(sport.getLocation()) <= radius){
+					if(getDistance(sport.getLatLon()) <= radius && isEnabled(sport.getName()) && isNotExpired(sport.getDate())){
 						events.add(sport);
 					}
 				}
@@ -436,11 +441,147 @@ public class SearchListActivity extends Activity {
 		}
 	}
 
-
-
-	public int getDistance(String location) {
-		// TODO Make this a real thing. Duplicate code in ListAdapter needs to be resolved.
-		return 15;
+	private double[] getGPSLoc(){
+		LocationManager locMan = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+		List<String> providers = locMan.getProviders(true);
+		Location loc = null;
+		
+		for (int i = providers.size()-1; i >= 0; i--) {
+			loc = locMan.getLastKnownLocation(providers.get(i));
+			if (loc != null) {
+				break;
+			}
+		}
+		double[] gps = new double[2];
+		if (loc != null) {
+			gps[0] = loc.getLatitude();
+			gps[1] = loc.getLongitude();
+		}
+		return gps;
 	}
+
+
+	public boolean isNotExpired(String date) {
+		Date currentDate = new Date(System.currentTimeMillis());
+		int year = Integer.parseInt(date.split("T")[0].split("-")[0]);
+		int month = Integer.parseInt(date.split("T")[0].split("-")[1]);
+		int day = Integer.parseInt(date.split("T")[0].split("-")[2]);
+		int hour = Integer.parseInt(date.split("T")[1].split(":")[0]);
+		int minute = Integer.parseInt(date.split("T")[1].split(":")[1]);
+		Calendar c = Calendar.getInstance();
+		c.set(year, month, day, hour, minute);
+		
+
+		Date checkDate = c.getTime();
+
+		if (currentDate.getTime() > checkDate.getTime() + 360000) {
+			return false;
+		}
+		return true;
+	}
+
+
+	public boolean isEnabled(String name) {
+		return enabledFilters.get(filters.indexOf(name));
+	}
+
+
+	public static int getDistance(String location) {
+		String[] latLon = location.split(":");
+		double latitude = Double.parseDouble(latLon[0]);
+		double longitude = Double.parseDouble(latLon[1]);
+		
+		return (int) haversine(lat, lon, latitude, longitude);
+	}
+
+
+	private static double haversine(double lat1, double lon1, double lat2,
+			double lon2) {
+		double dLat = Math.toRadians(lat2 - lat1);
+		double dLon = Math.toRadians(lon2 - lon1);
+		lat1 = Math.toRadians(lat1);
+		lat2 = Math.toRadians(lat2);
+		double a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.sin(dLon/2) * Math.sin(dLon/2) * Math.cos(lat1) * Math.cos(lat2);
+		double c = 2* Math.asin(Math.sqrt(a));
+		double finalResult = RADIUS * c * TO_MILES;
+		Log.d("PS", "DISTANCE: " + finalResult);
+		return finalResult;
+	}
+	
+	 class GenerateLatLon extends AsyncTask<String, Void, String>{
+
+			@Override
+			protected String doInBackground(String... params) {
+				try{
+					String address = params[0];
+					Log.d("PS", "address is: " + address);
+		    		//Toast.makeText(CreateEventActivity.this, "Generating Lat Lon", Toast.LENGTH_SHORT).show();
+		    		HttpGet getmethod = new HttpGet(SearchListActivity.BASE_URL + "?address=" + address.replace(' ', '+'));
+		    		Log.d("PS", "created getmethod: ");
+		    		org.apache.http.HttpResponse httpResponse = new DefaultHttpClient().execute(getmethod);
+		    		Log.d("PS", "executed get method");
+		    		int res = httpResponse.getStatusLine().getStatusCode();
+		    		Log.d("PS", "status code: " + res);
+		    		if (res == 200){
+		    			StringBuilder build = new StringBuilder();
+		    			BufferedReader read = new BufferedReader(new InputStreamReader(httpResponse.getEntity().getContent()));
+		    			for (String s = read.readLine(); s!= null; s = read.readLine()) {
+		    				build.append(s);
+		    			}
+		    			
+		    			String result = build.toString();
+		    			// Generating the lat and long from the JSON result
+		    		
+		    			String returnResult = "";
+		    			String lat = "";
+		    			String lon = "";
+		    			JSONObject obj = new JSONObject(result);
+		    			try {
+
+		    	            lat = ((JSONArray)obj.get("results")).getJSONObject(0)
+		    	                .getJSONObject("geometry").getJSONObject("location")
+		    	                .getDouble("lat") + "";
+
+		    	            lon = ((JSONArray)obj.get("results")).getJSONObject(0)
+		    	                .getJSONObject("geometry").getJSONObject("location")
+		    	                .getDouble("lng") + "";
+
+		    	            returnResult = lat + ":" + lon;
+		    	        } catch (JSONException e) {
+		    	            return "";
+
+		    	        }
+		    			
+		    			
+		    			Log.d("PS", "Final result is: " + returnResult);
+		    			//Toast.makeText(CreateEventActivity.this, "Lat Long was: " + result, Toast.LENGTH_SHORT).show();
+		    			return returnResult;
+		    		} 
+		    	}
+		    	catch(Exception e){
+		    		e.printStackTrace();
+		    		Log.e("PS", "ERROR   " + e.getStackTrace().toString());
+		    	}
+		    	return "";
+			}
+			
+			@Override
+			protected void onPostExecute(String result) {
+				super.onPostExecute(result);
+				if (result == null){
+					Log.e("PS", "Change Loc GenLatLon, res is null");
+				}else{
+					SearchListActivity.lat = Double.parseDouble(result.split(":")[0]);
+					SearchListActivity.lon = Double.parseDouble(result.split(":")[1]);
+					loadList();
+				}
+			}
+	    	
+	    }
+	
+	
+	
+	
+	
 	
 }

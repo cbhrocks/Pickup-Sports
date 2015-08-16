@@ -61,7 +61,7 @@ class PickupSportsApi(protorpc.remote.Service):
         if request.from_datastore:
             newSport = request
         else:
-            newSport = Sport(parent=main.PARENT_PROFILE_KEY, name=request.name, description=request.description, availability=request.availability, location=request.location)
+            newSport = Sport(parent=main.PARENT_PROFILE_KEY, name=request.name, description=request.description, availability=request.availability, location=request.location, latLon=request.latLon, date=request.date)
         newSport.put()
         return newSport
     

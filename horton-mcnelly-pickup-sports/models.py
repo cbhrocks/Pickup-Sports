@@ -15,9 +15,10 @@ class Profile(EndpointsModel):
     friends=ndb.KeyProperty(kind="Profile", repeated=True)
     
 class Sport(EndpointsModel):
-    _message_fields_schema = ("entityKey", "name", "description", "date", "location", "availability")
+    _message_fields_schema = ("entityKey", "name", "description", "date", "location", "availability", "latLon")
     name=ndb.StringProperty()
     description=ndb.StringProperty()
-    date=ndb.DateTimeProperty(auto_now=True)
+    date=ndb.StringProperty()
     location=ndb.StringProperty()
     availability=ndb.StringProperty()
+    latLon=ndb.StringProperty()

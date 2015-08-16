@@ -43,7 +43,7 @@
         android:layout_alignParentStart="true"
         android:layout_alignParentRight="true"
         android:layout_alignParentEnd="true"
-        android:text="@string/edit_text_address" />
+        android:hint="@string/edit_text_address" />
 
     <EditText
         android:layout_width="wrap_content"
@@ -54,7 +54,7 @@
         android:layout_alignParentStart="true"
         android:layout_alignParentRight="true"
         android:layout_alignParentEnd="true"
-        android:text="@string/edit_text_city" />
+        android:hint="@string/edit_text_city" />
 
     <Spinner
         android:layout_width="wrap_content"
@@ -77,7 +77,7 @@
         android:layout_toRightOf="@+id/spinnerState"
         android:layout_alignParentRight="true"
         android:layout_alignParentEnd="true"
-        android:text="@string/edit_text_zip" />
+        android:hint="@string/edit_text_zip" />
 
     <Button
         android:layout_width="wrap_content"
@@ -97,5 +97,21 @@
         android:layout_alignLeft="@+id/buttonPost"
         android:layout_alignStart="@+id/buttonPost"
         android:layout_marginTop="40dp" />
+
+    <Button
+        android:id="@+id/buttonSetAvail"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/buttonTime"
+        android:layout_alignRight="@+id/buttonDate"
+        android:layout_alignParentRight="true"
+        android:text="Set Availability" />
+        <Button
+        android:id="@+id/buttonSetDesc"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/buttonSetAvail"
+        android:layout_alignParentRight="true"
+        android:text="Set Description" />
 
 </RelativeLayout>

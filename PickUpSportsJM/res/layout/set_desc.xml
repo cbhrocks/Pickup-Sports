@@ -8,11 +8,11 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
-        android:text="@string/change_location_string"
+        android:text="Set a Description for the Event"
         android:textSize="20sp" />
     
      <EditText
-        android:id="@+id/set_loc_edit_text"
+        android:id="@+id/set_desc_edit_text"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="center"/>
