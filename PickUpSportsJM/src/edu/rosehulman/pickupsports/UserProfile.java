@@ -5,7 +5,7 @@ import java.util.ArrayList;
 /**
  * Created by Charlie on 7/26/2015.
  */
-public class Profile{
+public class UserProfile{
 
     private long mId;
     private String mEmail;

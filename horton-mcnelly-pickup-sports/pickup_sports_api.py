@@ -11,7 +11,7 @@ from google.appengine.ext import ndb
 import main
 
 WEB_CLIENT_ID=""
-ANDROID_CLIENT_ID=""
+ANDROID_CLIENT_ID="1056648884507-dqd4gbothjuf3g5ab23bokoaq7b2tmdb.apps.googleusercontent.com"
 IOS_CLIENT_ID=""
 
 @endpoints.api(name="pickupsports", version="v1", description="Pickup Sports API", audiences=[WEB_CLIENT_ID], 
@@ -26,8 +26,12 @@ class PickupSportsApi(protorpc.remote.Service):
         if request.from_datastore:
             my_profile_with_parent = request
         else:
-            my_profile_with_parent = Profile(parent = main.get_parent_key(endpoints.get_current_user()), first_name=request.first_name, last_name=request.last_name,
-                               phone_number=request.phone_number, friends=request.friends)
+            my_profile_with_parent = Profile(parent = main.get_parent_key(endpoints.get_current_user()), 
+                                             first_name=request.first_name, 
+                                             last_name=request.last_name,
+                                             phone_number=request.phone_number, 
+                                             friends=request.friends,
+                                             events=request.events)
         my_profile_with_parent.put()
         return my_profile_with_parent
     
@@ -56,14 +60,14 @@ class PickupSportsApi(protorpc.remote.Service):
         #we could add filters
         return query
     
-    @Profile.query_method(user_required=True, query_fields=("limit", "pageToken"), name="profile.friends", path="pickupsports/profile/friends", http_method="GET")
-    def profile_friend_list(self, query):
-        """ get all the profiles in friends list """
-        user = endpoints.get_current_user()
-        profile=Profile.query(ancestor=main.get_parent_key(user))
-        
-        friends = ndb.get_multi(profile)
-        return friends
+#     @Profile.query_method(user_required=True, query_fields=("limit", "pageToken"), name="profile.friends", path="pickupsports/profile/friends", http_method="GET")
+#     def profile_friend_list(self, query):
+#         """ get all the profiles in friends list """
+#         user = endpoints.get_current_user()
+#         profile_friends=Profile.query(ancestor=main.get_parent_key(user)).fetch()
+#         
+# #         friends = ndb.get_multi(profile_friends)
+#         return profile_friends
     
     @Profile.method(user_required=True, request_fields=("entityKey",), name="profile.delete", path="pickupsports/profile/delete/{entityKey}", http_method="DELETE")
     def profile_delete(self, request):
