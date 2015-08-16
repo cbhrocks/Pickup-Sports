@@ -26,3 +26,6 @@ class MainHandler(webapp2.RequestHandler):
 app = webapp2.WSGIApplication([
     ('/', MainHandler)
 ], debug=True)
+
+def get_parent_key(user):
+    return ndb.Key("Entity", user.email().lower())
