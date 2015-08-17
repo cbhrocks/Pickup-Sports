@@ -2,7 +2,7 @@ package edu.rosehulman.pickupsports;
 
 import java.util.ArrayList;
 
-import com.appspot.horton_mcnelly_pickup_sports.pickupsports.model.Sport;
+import com.appspot.pickupsports_copy.pickupsports.model.Sport;
 
 import android.content.Context;
 import android.util.Log;

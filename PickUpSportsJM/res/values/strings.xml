@@ -6,25 +6,16 @@
     <string name="action_settings">Settings</string>
     <string name="title_activity_profile">ProfileActivity</string>
 
-    <!-- Profile Activity -->
+    <!-- Profile Activity-->
     <string name="text_view_name">Name</string>
     <string name="text_view_email">Email</string>
     <string name="text_view_phone_number">Phone Number</string>
     <string name="title_activity_create_event">CreateEventActivity</string>
     <string name="text_view_tab_friends">My Friends</string>
     <string name="text_view_tab_events">My Events</string>
-    <!-- Profile Activity -->
+    <!-- Profile Activity-->
 
-
-	<!-- Create New Profile Activity -->
-	<string name="text_view_first_name">First Name:</string>
-	<string name="text_view_last_name">Last Name:</string>
-	<string name="text_view_phone_number1">Phone Number:</string>
-	<string name="button_accept">Accept</string>
-	<!-- Create New Profile Activity -->
-
-
-    <!-- Create Event Activity -->
+    <!-- Create Event Activity-->
     <string name="spinner_sport">Choose a Sport</string>
     <string name="button_date">Set Date</string>
     <string name="button_time">Set Time</string>
@@ -34,10 +25,9 @@
     <string name="edit_text_zip">Zip Code</string>
     <string name="button_post">Post</string>
     <string name="button_cancel">Cancel</string>
-    <!-- Create Event Activity -->
+    <!-- Create Event Activity-->
 
-
-    <!-- states spinner items -->
+    <!-- states spinner items-->
     <string name="Alabama">AL</string>
     <string name="Alaska">AK</string>
     <string name="arizona">AZ</string>
@@ -88,7 +78,7 @@
     <string name="west_virgina">WV</string>
     <string name="wisconsin">WI</string>
     <string name="wyoming">WY</string>
-    <!-- states spinner items -->
+    <!-- states spinner items-->
 
     <string name="title_activity_search_list">Search for events!</string>
     <string name="set_filters_string">Set Filters</string>
@@ -109,6 +99,5 @@
     <string name="event_detail">Event Details</string>
     <string name="event_accept">I\'m There!</string>
     <string name="event_decline">I\'m Not Going!</string>
-    <string name="title_activity_create_profile">CreateProfileActivity</string>
 
 </resources>

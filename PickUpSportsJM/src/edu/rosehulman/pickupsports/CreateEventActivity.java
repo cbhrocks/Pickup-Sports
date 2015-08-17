@@ -37,8 +37,8 @@ import org.json.*;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.DefaultHttpClient;
 
-import com.appspot.horton_mcnelly_pickup_sports.pickupsports.Pickupsports;
-import com.appspot.horton_mcnelly_pickup_sports.pickupsports.model.Sport;
+import com.appspot.pickupsports_copy.pickupsports.Pickupsports;
+import com.appspot.pickupsports_copy.pickupsports.model.Sport;
 import com.google.api.client.extensions.android.http.AndroidHttp;
 import com.google.api.client.json.gson.GsonFactory;
 import com.google.api.client.util.DateTime;

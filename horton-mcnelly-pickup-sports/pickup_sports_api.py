@@ -10,7 +10,7 @@ from models import Profile, Sport
 from google.appengine.ext import ndb
 import main
 
-WEB_CLIENT_ID="1056648884507-oa1su0p2lrbte1dice1blkbobdm260c9.apps.googleusercontent.com"
+WEB_CLIENT_ID=""
 ANDROID_CLIENT_ID="1056648884507-dqd4gbothjuf3g5ab23bokoaq7b2tmdb.apps.googleusercontent.com"
 IOS_CLIENT_ID=""
 
@@ -76,7 +76,7 @@ class PickupSportsApi(protorpc.remote.Service):
             raise endpoints.NotFoundException("profile to be deleted not found")
          
         request.key.delete()
-        return Profile(first_name="deleted")
+        return Profile(quote="deleted")
     
 
     @Sport.query_method(query_fields=("limit", "order", "pageToken"), name="sport.list", path="pickupsports/sport/list", http_method="GET")
@@ -92,6 +92,7 @@ class PickupSportsApi(protorpc.remote.Service):
             newSport = Sport(parent=main.PARENT_PROFILE_KEY, name=request.name, description=request.description, availability=request.availability, location=request.location, latLon=request.latLon, date=request.date)
         newSport.put()
         return newSport
+    
     
     @Sport.method(request_fields=("entityKey",), name="sport.delete", path="pickupsports/sport/delete/{entityKey}", http_method="DELETE")
     def sport_delete(self, request):
