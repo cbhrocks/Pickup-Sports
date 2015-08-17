@@ -14,6 +14,7 @@ import com.appspot.horton_mcnelly_pickup_sports.pickupsports.*;
 import com.appspot.horton_mcnelly_pickup_sports.pickupsports.Pickupsports.Profile.Get;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
@@ -25,7 +26,6 @@ import android.widget.ListView;
 import android.widget.TabHost;
 import android.widget.TabWidget;
 import android.widget.TextView;
-import edu.rosehulman.pickupsports.SearchListActivity.QueryForEventsTask;
 
 public class ProfileActivity extends Activity {
 	private TabHost mTabHost;
@@ -33,6 +33,9 @@ public class ProfileActivity extends Activity {
 	private FrameLayout mFrameLayoutTabs;
 	private ListView mFriendListView;
 	private ListView mEventListView;
+	
+	private TextView mName;
+	private TextView mPhoneNumber;
 
 	private List<Profile> mFriends;
 	private List<Sport> mEvents;
@@ -50,6 +53,9 @@ public class ProfileActivity extends Activity {
 		setContentView(R.layout.activity_profile);
 
 		getActionBar().setDisplayHomeAsUpEnabled(true);
+		
+		mName = (TextView) findViewById(R.id.textViewName);
+		mPhoneNumber = (TextView) findViewById(R.id.textViewPhoneNumber);
 
 		mTabHost = (TabHost) findViewById(R.id.tabHost);
 		mTabHost.setup();
@@ -57,7 +63,15 @@ public class ProfileActivity extends Activity {
 		mTabWidget = mTabHost.getTabWidget();
 		mFrameLayoutTabs = mTabHost.getTabContentView();
 
-		mProfile = new Profile();
+		loadProfile();
+		
+		if (mProfile == null){
+			Intent intent = new Intent(this, CreateProfileActivity.class);
+			startActivity(intent);
+		}
+		
+		mName.setText(mProfile.getFirstName()+ " " + mProfile.getLastName());
+		mPhoneNumber.setText(mProfile.getPhoneNumber());
 
 		mFriends = new ArrayList<Profile>();
 		mEvents = new ArrayList<Sport>();
@@ -137,8 +151,8 @@ public class ProfileActivity extends Activity {
 	}
 	
 	private void reloadEList() {
-		eAdapter = new ListAdapter(this,(ArrayList<Sport>) events);
-		eAapter.notifyDataSetChanged();
+		eAdapter = new ListAdapter(this,(ArrayList<Sport>) mEvents);
+		eAdapter.notifyDataSetChanged();
 		mEventListView.setAdapter(eAdapter);
 	} 
 

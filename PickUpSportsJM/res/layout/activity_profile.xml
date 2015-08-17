@@ -30,7 +30,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/text_view_email"
-        android:id="@+id/textView3"
+        android:id="@+id/textViewEmail"
         android:layout_below="@+id/textViewName"
         android:layout_toRightOf="@+id/imageViewProfile"
         android:layout_toEndOf="@+id/imageViewProfile"
@@ -40,7 +40,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/text_view_phone_number"
-        android:id="@+id/textView2"
+        android:id="@+id/textViewPhoneNumber"
         android:layout_alignBottom="@+id/imageViewProfile"
         android:layout_toRightOf="@id/imageViewProfile"
         android:layout_toEndOf="@+id/imageViewProfile" />

@@ -14,9 +14,11 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import com.appspot.pickupsports_copy.pickupsports.Pickupsports;
-import com.appspot.pickupsports_copy.pickupsports.model.Sport;
-import com.appspot.pickupsports_copy.pickupsports.model.SportCollection;
+import com.appspot.horton_mcnelly_pickup_sports.pickupsports.Pickupsports;
+import com.appspot.horton_mcnelly_pickup_sports.pickupsports.Pickupsports.Profile.Get;
+import com.appspot.horton_mcnelly_pickup_sports.pickupsports.model.ProfileCollection;
+import com.appspot.horton_mcnelly_pickup_sports.pickupsports.model.Sport;
+import com.appspot.horton_mcnelly_pickup_sports.pickupsports.model.SportCollection;
 import com.google.api.client.extensions.android.http.AndroidHttp;
 import com.google.api.client.json.gson.GsonFactory;
 
@@ -28,6 +30,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.DialogInterface.OnMultiChoiceClickListener;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.location.Location;
 import android.location.LocationManager;
 import android.net.Uri;
@@ -44,6 +47,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.AdapterView.OnItemLongClickListener;
+import edu.rosehulman.pickupsports.ProfileActivity.QueryForProfileTask;
 import android.widget.Toast;
 
 public class SearchListActivity extends Activity {
@@ -62,10 +66,22 @@ public class SearchListActivity extends Activity {
 	List<Boolean> enabledFilters = new ArrayList<Boolean>();
 	private Pickupsports mService;
 	
+	com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential mCredential;
+	
+	com.appspot.horton_mcnelly_pickup_sports.pickupsports.model.Profile mProfile;
+	
+	SharedPreferences mSettings = null;
+	public static final String SHARED_PREFERENCES_NAME = "PickupSports";
+	public static final String PREF_ACCOUNT_NAME = "PREF_ACCOUNT_NAME";
+	static final int REQUEST_ACCOUNT_PICKER = 1;
+	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_search_list);
+		
+		mCredential = com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential.usingAudience(this, "server:client_id:1056648884507-oa1su0p2lrbte1dice1blkbobdm260c9.apps.googleusercontent.com");
+		
 		lv = (ListView) findViewById(R.id.list_view);
 		events = new ArrayList<Sport>();
 		loadFilters();
@@ -98,10 +114,17 @@ public class SearchListActivity extends Activity {
 			}
 		});
 		
+		mSettings = getSharedPreferences(SHARED_PREFERENCES_NAME, 0);
+		setAccountName(mSettings.getString(PREF_ACCOUNT_NAME, null));
 		
-		
-		Pickupsports.Builder builder = new Pickupsports.Builder(AndroidHttp.newCompatibleTransport(), new GsonFactory(), null);
+		Pickupsports.Builder builder = new Pickupsports.Builder(AndroidHttp.newCompatibleTransport(), new GsonFactory(), mCredential);
 		mService = builder.build();
+		
+		if (mCredential.getSelectedAccountName() == null){
+			chooseAccount();
+		}
+		
+		loadProfile();
 		
 		loadList();
 		
@@ -126,6 +149,9 @@ public class SearchListActivity extends Activity {
 		loadList();
 	}
 
+	private void loadProfile() {
+		(new QueryForProfileTask()).execute();
+	}
 
 	private void loadList() {
 		
@@ -139,6 +165,18 @@ public class SearchListActivity extends Activity {
 			lv.setAdapter(adapter);
 		} 
 
+	private void setAccountName(String accountName) {
+		SharedPreferences.Editor editor = mSettings.edit();
+		editor.putString(PREF_ACCOUNT_NAME, accountName);
+		editor.commit();
+		mCredential.setSelectedAccountName(accountName);
+	}
+	
+	void chooseAccount() {
+		// This picker is built in to the Android framework.
+		startActivityForResult(mCredential.newChooseAccountIntent(), REQUEST_ACCOUNT_PICKER);
+	}
+		
 	//menu
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
@@ -242,6 +280,12 @@ public class SearchListActivity extends Activity {
 								
 								SearchListActivity.this.toggleInterest();
 								SearchListActivity.this.reload();
+								
+								if (mProfile == null){
+									Intent intent = new Intent(getBaseContext(), CreateProfileActivity.class);
+									startActivity(intent);
+								}
+								
 								dismiss();
 							}
 						});
@@ -413,7 +457,7 @@ public class SearchListActivity extends Activity {
 		@Override
 		protected SportCollection doInBackground(Void... params) {
 			try {
-				com.appspot.pickupsports_copy.pickupsports.Pickupsports.Sport.List query = mService.sport().list();
+				com.appspot.horton_mcnelly_pickup_sports.pickupsports.Pickupsports.Sport.List query = mService.sport().list();
 				query.setLimit(50L);
 				query.setOrder("name");//add filter to sort by distance as well. Next sprint.
 				sports = query.execute();
@@ -579,7 +623,32 @@ public class SearchListActivity extends Activity {
 	    	
 	    }
 	
-	
+	 class QueryForProfileTask extends AsyncTask<Void, Void, ProfileCollection> {
+			ProfileCollection profile = null;
+
+			@Override
+			protected ProfileCollection doInBackground(Void... params) {
+				// TODO Auto-generated method stub
+				try {
+					Get query = mService.profile().get();
+					profile = query.execute();
+				} catch (IOException e) {
+					Log.e("PS", "Failed Loading " + e);
+				}
+				return profile;
+			}
+
+			@Override
+			protected void onPostExecute(ProfileCollection result) {
+				if (result == null) {
+					Log.e("PS", "Result failed, null");
+				} else {
+					List<com.appspot.horton_mcnelly_pickup_sports.pickupsports.model.Profile> allResults = result
+							.getItems();
+					mProfile = allResults.get(0);
+				}
+			}
+		}
 	
 	
 	
