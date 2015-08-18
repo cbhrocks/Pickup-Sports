@@ -10,12 +10,11 @@ from models import Profile, Sport
 from google.appengine.ext import ndb
 import main
 
-WEB_CLIENT_ID=""
-ANDROID_CLIENT_ID="1056648884507-dqd4gbothjuf3g5ab23bokoaq7b2tmdb.apps.googleusercontent.com"
-IOS_CLIENT_ID=""
+# WEB_CLIENT_ID=""
+# ANDROID_CLIENT_ID="1056648884507-dqd4gbothjuf3g5ab23bokoaq7b2tmdb.apps.googleusercontent.com"
+# IOS_CLIENT_ID=""
 
-@endpoints.api(name="pickupsports", version="v1", description="Pickup Sports API", audiences=[WEB_CLIENT_ID], 
-               allowed_client_ids=[endpoints.API_EXPLORER_CLIENT_ID, WEB_CLIENT_ID, ANDROID_CLIENT_ID, IOS_CLIENT_ID])
+@endpoints.api(name="pickupsports", version="v1", description="Pickup Sports API")
 class PickupSportsApi(protorpc.remote.Service):
     """ API for the CRUD methods """ 
     # Methods will be either methods (returns a single object) or query methods (return a collection)
@@ -47,14 +46,14 @@ class PickupSportsApi(protorpc.remote.Service):
 #         my_profile.put()
 #         return my_profile
     
-    @Profile.query_method(user_required = True, name="profile.get", path="pickupsports/profile/get", http_method="GET")
+    @Profile.query_method(name="profile.get", path="pickupsports/profile/get", http_method="GET")
     def profile_get(self, query):
         """ get the current user's profile """
         user = endpoints.get_current_user()
         profile=Profile.query(ancestor=main.get_parent_key(user)).order(Profile.first_name)
         return profile
     
-    @Profile.query_method(user_required=True, query_fields = ("limit", "order", "pageToken"),name="profile.list", path="pickupsports/profile/list", http_method="GET")
+    @Profile.query_method(query_fields = ("limit", "order", "pageToken"),name="profile.list", path="pickupsports/profile/list", http_method="GET")
     def profile_list(self, query):
         """ get all the profiles """
         #we could add filters
@@ -69,7 +68,7 @@ class PickupSportsApi(protorpc.remote.Service):
 # #         friends = ndb.get_multi(profile_friends)
 #         return profile_friends
     
-    @Profile.method(user_required=True, request_fields=("entityKey",), name="profile.delete", path="pickupsports/profile/delete/{entityKey}", http_method="DELETE")
+    @Profile.method(request_fields=("entityKey",), name="profile.delete", path="pickupsports/profile/delete/{entityKey}", http_method="DELETE")
     def profile_delete(self, request):
         """ Delete a profile if its there """
         if not request.from_datastore:

@@ -14,9 +14,9 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import com.appspot.pickupsports_copy.pickupsports.Pickupsports;
-import com.appspot.pickupsports_copy.pickupsports.model.Sport;
-import com.appspot.pickupsports_copy.pickupsports.model.SportCollection;
+import com.appspot.horton_mcnelly_pickup_sports.pickupsports.Pickupsports;
+import com.appspot.horton_mcnelly_pickup_sports.pickupsports.model.Sport;
+import com.appspot.horton_mcnelly_pickup_sports.pickupsports.model.SportCollection;
 import com.google.api.client.extensions.android.http.AndroidHttp;
 import com.google.api.client.json.gson.GsonFactory;
 
@@ -39,11 +39,11 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemClickListener;
+import android.widget.AdapterView.OnItemLongClickListener;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
-import android.widget.AdapterView.OnItemClickListener;
-import android.widget.AdapterView.OnItemLongClickListener;
 import android.widget.Toast;
 
 public class SearchListActivity extends Activity {
@@ -413,7 +413,7 @@ public class SearchListActivity extends Activity {
 		@Override
 		protected SportCollection doInBackground(Void... params) {
 			try {
-				com.appspot.pickupsports_copy.pickupsports.Pickupsports.Sport.List query = mService.sport().list();
+				com.appspot.horton_mcnelly_pickup_sports.pickupsports.Pickupsports.Sport.List query = mService.sport().list();
 				query.setLimit(50L);
 				query.setOrder("name");//add filter to sort by distance as well. Next sprint.
 				sports = query.execute();

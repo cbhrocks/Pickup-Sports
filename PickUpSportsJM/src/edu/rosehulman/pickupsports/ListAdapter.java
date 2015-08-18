@@ -2,7 +2,6 @@ package edu.rosehulman.pickupsports;
 
 import java.util.ArrayList;
 
-import com.appspot.pickupsports_copy.pickupsports.model.Sport;
 
 import android.content.Context;
 import android.util.Log;
@@ -11,11 +10,11 @@ import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 public class ListAdapter extends BaseAdapter {
 	private Context mContext;
-	private ArrayList<Sport> sports;
+	private ArrayList<com.appspot.horton_mcnelly_pickup_sports.pickupsports.model.Sport> sports;
 
-	public ListAdapter(Context context, ArrayList<Sport> sports) {
+	public ListAdapter(Context context, ArrayList<com.appspot.horton_mcnelly_pickup_sports.pickupsports.model.Sport> arrayList) {
 		mContext = context;
-		this.sports=sports;
+		this.sports=arrayList;
 	}
 
 	@Override

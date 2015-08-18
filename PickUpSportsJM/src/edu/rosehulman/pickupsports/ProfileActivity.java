@@ -137,8 +137,8 @@ public class ProfileActivity extends Activity {
 	}
 	
 	private void reloadEList() {
-		eAdapter = new ListAdapter(this,(ArrayList<Sport>) events);
-		eAapter.notifyDataSetChanged();
+		eAdapter = new ListAdapter(this,(ArrayList<Sport>) mEvents);
+		eAdapter.notifyDataSetChanged();
 		mEventListView.setAdapter(eAdapter);
 	} 
 
