@@ -6,7 +6,7 @@
     tools:context="edu.rosehulman.pickupsports.ProfileActivity"
     android:background="@color/profile_background">
 
-    <ImageView
+    <!-- <ImageView
         android:layout_width="100dp"
         android:layout_height="100dp"
         android:id="@+id/imageViewProfile"
@@ -15,18 +15,22 @@
         android:layout_alignParentStart="true"
         android:layout_marginLeft="25dp"
         android:layout_marginStart="49dp"
-        android:layout_marginTop="25dp" />
+        android:layout_marginTop="25dp" /> -->
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/text_view_name"
         android:id="@+id/textViewName"
-        android:layout_alignTop="@+id/imageViewProfile"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:textSize="35sp" />
+        <!-- android:layout_alignTop="@+id/imageViewProfile"
         android:layout_toRightOf="@+id/imageViewProfile"
-        android:layout_toEndOf="@+id/imageViewProfile" />
+        android:layout_toEndOf="@+id/imageViewProfile" --> 
 
-    <TextView
+    <!-- <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/text_view_email"
@@ -34,22 +38,25 @@
         android:layout_below="@+id/textViewName"
         android:layout_toRightOf="@+id/imageViewProfile"
         android:layout_toEndOf="@+id/imageViewProfile"
-        android:paddingTop="25dp"/>
+        android:paddingTop="25dp"/> -->
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/text_view_phone_number"
         android:id="@+id/textViewPhoneNumber"
-        android:layout_alignBottom="@+id/imageViewProfile"
+        android:layout_below="@+id/textViewName"
+        android:paddingTop="10dp"
+        android:textSize="35sp" />
+        <!-- android:layout_alignBottom="@+id/imageViewProfile"
         android:layout_toRightOf="@id/imageViewProfile"
-        android:layout_toEndOf="@+id/imageViewProfile" />
+        android:layout_toEndOf="@+id/imageViewProfile"  -->
 
     <TabHost
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:id="@+id/tabHost"
-        android:layout_below="@+id/textView2"
+        android:layout_below="@+id/textViewPhoneNumber"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="20dp"
         android:background="@color/list_background">
@@ -65,11 +72,11 @@
                 android:layout_height="wrap_content"
                 android:background="@color/list_tabs_background">
 
-                <TextView
+                <!--<TextView
                     android:tag="tab0"
                     android:layout_width="wrap_content"
                     android:layout_height="fill_parent"
-                    android:text="@string/text_view_tab_friends" />
+                    android:text="@string/text_view_tab_friends" />-->
 
                 <TextView
                     android:tag="tab1"
@@ -83,7 +90,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent">
 
-                <LinearLayout
+                <!--<LinearLayout
                     android:id="@+id/tabFriends"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
@@ -94,7 +101,7 @@
                         android:layout_height="wrap_content"
                         android:id="@+id/listViewFriends"
                         android:layout_gravity="center_horizontal" />
-                </LinearLayout>
+                </LinearLayout>-->
 
                 <LinearLayout
                     android:id="@+id/tabEvents"

@@ -4,7 +4,7 @@
     <string name="app_name">PickUpSports</string>
     <string name="hello_world">Hello world!</string>
     <string name="action_settings">Settings</string>
-    <string name="title_activity_profile">ProfileActivity</string>
+    <string name="title_activity_profile">My Profile</string>
 
     <!-- Profile Activity -->
     <string name="text_view_name">Name</string>
@@ -13,6 +13,7 @@
     <string name="title_activity_create_event">CreateEventActivity</string>
     <string name="text_view_tab_friends">My Friends</string>
     <string name="text_view_tab_events">My Events</string>
+    <string name="remove">Remove</string>
     <!-- Profile Activity -->
 
 
@@ -110,5 +111,7 @@
     <string name="event_accept">I\'m There!</string>
     <string name="event_decline">I\'m Not Going!</string>
     <string name="title_activity_create_profile">CreateProfileActivity</string>
+    <string name="change_user_string">Switch User</string>
+    <string name="add_event">Add new Event</string>
 
 </resources>

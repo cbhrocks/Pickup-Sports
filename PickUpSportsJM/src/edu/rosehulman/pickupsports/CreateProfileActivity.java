@@ -5,6 +5,8 @@ import java.io.IOException;
 import com.appspot.horton_mcnelly_pickup_sports.pickupsports.Pickupsports;
 import com.appspot.horton_mcnelly_pickup_sports.pickupsports.model.Profile;
 import com.appspot.horton_mcnelly_pickup_sports.pickupsports.model.Sport;
+import com.google.api.client.extensions.android.http.AndroidHttp;
+import com.google.api.client.json.gson.GsonFactory;
 
 import android.app.Activity;
 import android.os.AsyncTask;
@@ -25,8 +27,6 @@ public class CreateProfileActivity extends Activity implements OnClickListener{
 	Button mButtonAccept;
 	Button mButtonCancel;
 	Profile mProfile;
-	
-	private Pickupsports mService;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -39,6 +39,7 @@ public class CreateProfileActivity extends Activity implements OnClickListener{
 		mButtonCancel = (Button) findViewById(R.id.buttonCancel);
 		mButtonAccept.setOnClickListener(this);
 		mButtonCancel.setOnClickListener(this);
+		mProfile = new Profile();
 	}
 
 	@Override
@@ -67,21 +68,25 @@ public class CreateProfileActivity extends Activity implements OnClickListener{
 			mProfile.setFirstName(mEditTextFirstName.getText().toString());
 			mProfile.setLastName(mEditTextLastName.getText().toString());
 			mProfile.setPhoneNumber(mEditTextPhoneNumber.getText().toString());
+//			Log.d("PS", "Using account name (in createProfile) = " + SearchListActivity.mCredential.getSelectedAccountName());
+			(new InsertProfileTask()).execute(mProfile);
+			CreateProfileActivity.this.finish();
 		} else if (v == mButtonCancel){
 			CreateProfileActivity.this.finish();
 		}
 	}
 	
-	class InsertProfileTask extends AsyncTask<Sport, Void, Sport>{
+	class InsertProfileTask extends AsyncTask<Profile, Void, Profile>{
 		@Override
 		protected void onPreExecute(){
 			Toast.makeText(CreateProfileActivity.this, "Creating new Profile!", Toast.LENGTH_LONG).show();
 		}
+		
 		@Override
-		protected Sport doInBackground(Sport... params) {
-			Sport toReturn = null;
+		protected Profile doInBackground(Profile... params) {
+			Profile toReturn = null;
 			try {
-				toReturn = mService.sport().insert(params[0]).execute();
+				toReturn = SearchListActivity.mService.profile().insert(params[0]).execute();
 			} catch (IOException e) {
 				Log.e("PS", "Failed Inserting " + e);
 			}
@@ -89,7 +94,7 @@ public class CreateProfileActivity extends Activity implements OnClickListener{
 		}
 		
 		@Override
-		protected void onPostExecute(Sport result) {
+		protected void onPostExecute(Profile result) {
 			super.onPostExecute(result);
 			if (result == null){
 				Log.e("PS", "Insert failed, res is null");

@@ -14,18 +14,29 @@ import com.appspot.horton_mcnelly_pickup_sports.pickupsports.*;
 import com.appspot.horton_mcnelly_pickup_sports.pickupsports.Pickupsports.Profile.Get;
 
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.app.Dialog;
+import android.app.DialogFragment;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.FrameLayout;
 import android.widget.ListView;
 import android.widget.TabHost;
 import android.widget.TabWidget;
 import android.widget.TextView;
+import android.widget.Toast;
+import android.widget.AdapterView.OnItemClickListener;
+import android.widget.AdapterView.OnItemLongClickListener;
+import edu.rosehulman.pickupsports.SearchListActivity.UpdateProfileTask;
 
 public class ProfileActivity extends Activity {
 	private TabHost mTabHost;
@@ -40,12 +51,14 @@ public class ProfileActivity extends Activity {
 	private List<Profile> mFriends;
 	private List<Sport> mEvents;
 
-	com.appspot.horton_mcnelly_pickup_sports.pickupsports.model.Profile mProfile;
+	public static double lat;
+	public static double lon;
+	
+	Profile mProfile;
+	Sport currentEvent;
 
 	FriendListAdapter fAdapter;
 	ListAdapter eAdapter;
-
-	private Pickupsports mService;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -62,22 +75,29 @@ public class ProfileActivity extends Activity {
 
 		mTabWidget = mTabHost.getTabWidget();
 		mFrameLayoutTabs = mTabHost.getTabContentView();
+		
+		mEvents = new ArrayList<Sport>();
+		mFriends = new ArrayList<Profile>();
+		mProfile = new Profile();
+		
+		mEventListView = (ListView) findViewById(R.id.listViewEvents);
+		mEventListView.setOnItemClickListener(new OnItemClickListener() {
+
+			@Override
+			public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+
+				ProfileActivity.this.showDetail(position);
+
+			}
+		});
 
 		loadProfile();
+		loadEventsList();
 		
-		if (mProfile == null){
-			Intent intent = new Intent(this, CreateProfileActivity.class);
-			startActivity(intent);
-		}
-		
-		mName.setText(mProfile.getFirstName()+ " " + mProfile.getLastName());
-		mPhoneNumber.setText(mProfile.getPhoneNumber());
-
-		mFriends = new ArrayList<Profile>();
-		mEvents = new ArrayList<Sport>();
-
-		mFriendListView = (ListView) findViewById(R.id.listViewFriends);
-		mEventListView = (ListView) findViewById(R.id.listViewEvents);
+//		if (mProfile == null){
+//			Intent intent = new Intent(this, CreateProfileActivity.class);
+//			startActivity(intent);
+//		}
 
 		TextView[] originalTextViews = new TextView[mTabWidget.getTabCount()];
 		for (int i = 0; i < mTabWidget.getTabCount(); i++) {
@@ -106,6 +126,8 @@ public class ProfileActivity extends Activity {
 			}
 			mTabHost.addTab(tabSpec);
 		}
+		
+		
 	}
 
 	@Override
@@ -187,7 +209,7 @@ public class ProfileActivity extends Activity {
 		protected ProfileCollection doInBackground(Void... params) {
 			// TODO Auto-generated method stub
 			try {
-				Get query = mService.profile().get();
+				Get query = SearchListActivity.mService.profile().get();
 				profile = query.execute();
 			} catch (IOException e) {
 				Log.e("PS", "Failed Loading " + e);
@@ -202,7 +224,22 @@ public class ProfileActivity extends Activity {
 			} else {
 				List<com.appspot.horton_mcnelly_pickup_sports.pickupsports.model.Profile> allResults = result
 						.getItems();
-				mProfile = allResults.get(0);
+				if (allResults != null){
+					mProfile = allResults.get(0);
+					Log.d(SearchListActivity.PS, "current profile = " + mProfile);
+					
+					mName.setText(mProfile.getFirstName()+ " " + mProfile.getLastName());
+					mPhoneNumber.setText(mProfile.getPhoneNumber());
+
+					mFriends = new ArrayList<Profile>();
+					mEvents = new ArrayList<Sport>();
+
+//					mFriendListView = (ListView) findViewById(R.id.listViewFriends);
+					mEventListView = (ListView) findViewById(R.id.listViewEvents);
+				} else{
+					Intent intent = new Intent(getBaseContext(), CreateProfileActivity.class);
+					startActivity(intent);
+				}
 			}
 		}
 	}
@@ -213,8 +250,8 @@ public class ProfileActivity extends Activity {
 		@Override
 		protected ProfileCollection doInBackground(Void... params) {
 			try {
-				com.appspot.horton_mcnelly_pickup_sports.pickupsports.Pickupsports.Profile.List query = mService
-						.profile().list();
+				com.appspot.horton_mcnelly_pickup_sports.pickupsports.Pickupsports.Profile.List query = 
+						SearchListActivity.mService.profile().list();
 				query.setOrder("first_name");// add filter to sort by distance
 												// as well. Next sprint.
 				profiles = query.execute();
@@ -230,10 +267,13 @@ public class ProfileActivity extends Activity {
 			if (result == null) {
 				Log.e("PS", "Result failed, null");
 			} else {
+				if (mFriends != null){
+					mFriends.clear();
+				}
 				mFriends.clear();
 				List<Profile> allResults = result.getItems();
 				for (Profile profile : allResults) {
-					if (mProfile.getFriends().contains(profile.getEntityKey())) {
+					if ((mProfile.getFriends() != null) && mProfile.getFriends().contains(profile.getEntityKey())) {
 						mFriends.add(profile);
 					}
 				}
@@ -249,7 +289,7 @@ public class ProfileActivity extends Activity {
 		@Override
 		protected SportCollection doInBackground(Void... params) {
 			try {
-				com.appspot.horton_mcnelly_pickup_sports.pickupsports.Pickupsports.Sport.List query = mService.sport().list();
+				com.appspot.horton_mcnelly_pickup_sports.pickupsports.Pickupsports.Sport.List query = SearchListActivity.mService.sport().list();
 				query.setLimit(50L);
 				query.setOrder("name");// add filter to sort by distance as
 										// well. Next sprint.
@@ -266,10 +306,12 @@ public class ProfileActivity extends Activity {
 			if (result == null) {
 				Log.e("PS", "Result failed, null");
 			} else {
-				mEvents.clear();
+				if (mEvents != null){
+					mEvents.clear();
+				}
 				List<Sport> allResults = result.getItems();
 				for (Sport sport : allResults) {
-					if (mProfile.getEvents().contains(sport.getEntityKey()) && isNotExpired(sport.getDate())) {
+					if ((mProfile.getEvents() != null) && mProfile.getEvents().contains(sport.getEntityKey()) && isNotExpired(sport.getDate())) {
 						mEvents.add(sport);
 					}
 				}
@@ -277,5 +319,110 @@ public class ProfileActivity extends Activity {
 				reloadEList();
 			}
 		}
+	}
+	
+	protected void showDetail(int position) {
+
+		currentEvent = (Sport) eAdapter.getItem(position);
+
+		DialogFragment df = new DialogFragment() {
+
+			@Override
+			public Dialog onCreateDialog(Bundle savedInstanceState) {
+				AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+				LayoutInflater inflater = getActivity().getLayoutInflater();
+				View view = inflater.inflate(R.layout.event_detail, null);
+				((TextView) view.findViewById(R.id.detail_sport))
+						.setText(ProfileActivity.this.currentEvent.getName());
+				((TextView) view.findViewById(R.id.detail_desc))
+						.setText(ProfileActivity.this.currentEvent.getDescription());
+				((TextView) view.findViewById(R.id.detail_avail))
+						.setText(ProfileActivity.this.currentEvent.getAvailability());
+				String dateTime = ProfileActivity.this.currentEvent.getDate();
+				String date = dateTime.split("T")[0];
+				String year = date.split("-")[0];
+				int month = Integer.parseInt(date.split("-")[1]) + 1;
+				String day = date.split("-")[2];
+				date = year + "-" + month + "-" + day;
+				String time = dateTime.split("T")[1];
+				time = time.split(":")[0] + ":" + time.split(":")[1];
+				dateTime = date + " " + time;
+				((TextView) view.findViewById(R.id.detail_date)).setText(dateTime);
+				((TextView) view.findViewById(R.id.detail_loc))
+						.setText(ProfileActivity.this.currentEvent.getLocation());
+				builder.setView(view);
+				builder.setNegativeButton(R.string.cancel_string, new DialogInterface.OnClickListener() {
+					@Override
+					public void onClick(DialogInterface dialog, int which) {
+						dismiss();
+					}
+				});
+				builder.setNeutralButton(R.string.remove, new DialogInterface.OnClickListener() {
+
+					@Override
+					public void onClick(DialogInterface dialog, int which) {
+						Toast.makeText(ProfileActivity.this, "removing event!", Toast.LENGTH_LONG).show();
+						
+						List<String> PEList = mProfile.getEvents();
+
+						if (PEList.contains(currentEvent.getEntityKey())){
+							PEList.remove(currentEvent.getEntityKey());
+						}
+						mProfile.setEvents(PEList);
+						
+						(new UpdateProfileTask()).execute(mProfile);
+						reloadEList();
+
+						dismiss();
+					}
+				});
+				builder.setPositiveButton("Get Directions!", new DialogInterface.OnClickListener() {
+					@Override
+					public void onClick(DialogInterface dialog, int which) {
+						String destLat = currentEvent.getLatLon().split(":")[0];
+						String destLon = currentEvent.getLatLon().split(":")[1];
+						Intent intent = new Intent(android.content.Intent.ACTION_VIEW,
+								Uri.parse("http://maps.google.com/maps?saddr=" + lat + "," + lon + "&daddr=" + destLat
+										+ "," + destLon));
+						startActivity(intent);
+
+					}
+				});
+				return builder.create();
+			}
+		};
+
+		df.show(getFragmentManager(), "showDetail");
+	}
+	
+	class UpdateProfileTask extends AsyncTask<Profile, Void, Profile> {
+		@Override
+		protected void onPreExecute() {
+			Toast.makeText(ProfileActivity.this, "updating Profile!", Toast.LENGTH_LONG).show();
+		}
+
+		@Override
+		protected Profile doInBackground(Profile... params) {
+			Profile toReturn = null;
+			try {
+				toReturn = SearchListActivity.mService.profile().insert(params[0]).execute();
+			} catch (IOException e) {
+				Log.e("PS", "Failed removing " + e);
+			}
+			return toReturn;
+		}
+
+		@Override
+		protected void onPostExecute(Profile result) {
+			super.onPostExecute(result);
+			if (result == null) {
+				Log.e("PS", "Remove failed, res is null");
+			} else {
+				// Toast and Go back
+				Toast.makeText(ProfileActivity.this, "Removed Event to Your Profile!", Toast.LENGTH_LONG).show();
+				loadEventsList();
+			}
+		}
+
 	}
 }

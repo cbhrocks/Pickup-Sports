@@ -16,12 +16,15 @@ import org.json.JSONObject;
 
 import com.appspot.horton_mcnelly_pickup_sports.pickupsports.Pickupsports;
 import com.appspot.horton_mcnelly_pickup_sports.pickupsports.Pickupsports.Profile.Get;
+import com.appspot.horton_mcnelly_pickup_sports.pickupsports.model.Profile;
 import com.appspot.horton_mcnelly_pickup_sports.pickupsports.model.ProfileCollection;
 import com.appspot.horton_mcnelly_pickup_sports.pickupsports.model.Sport;
 import com.appspot.horton_mcnelly_pickup_sports.pickupsports.model.SportCollection;
 import com.google.api.client.extensions.android.http.AndroidHttp;
+import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential;
 import com.google.api.client.json.gson.GsonFactory;
 
+import android.accounts.AccountManager;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
@@ -64,87 +67,84 @@ public class SearchListActivity extends Activity {
 	int radius = 30;
 	List<String> filters = new ArrayList<String>();
 	List<Boolean> enabledFilters = new ArrayList<Boolean>();
-	private Pickupsports mService;
-	
-	com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential mCredential;
-	
+	static Pickupsports mService;
+
+	GoogleAccountCredential mCredential;
+
 	com.appspot.horton_mcnelly_pickup_sports.pickupsports.model.Profile mProfile;
-	
+
 	SharedPreferences mSettings = null;
 	public static final String SHARED_PREFERENCES_NAME = "PickupSports";
 	public static final String PREF_ACCOUNT_NAME = "PREF_ACCOUNT_NAME";
+	public static final String PS = "PS";
 	static final int REQUEST_ACCOUNT_PICKER = 1;
-	
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_search_list);
-		
-		mCredential = com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential.usingAudience(this, "server:client_id:1056648884507-oa1su0p2lrbte1dice1blkbobdm260c9.apps.googleusercontent.com");
-		
+
+		mCredential = com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential
+				.usingAudience(this,
+						"server:client_id:1056648884507-oa1su0p2lrbte1dice1blkbobdm260c9.apps.googleusercontent.com");
+
 		lv = (ListView) findViewById(R.id.list_view);
 		events = new ArrayList<Sport>();
 		loadFilters();
 		double[] gps = getGPSLoc();
-		lat=gps[0];
-		lon=gps[1];
+		lat = gps[0];
+		lon = gps[1];
 		lv.setOnItemLongClickListener(new OnItemLongClickListener() {
 
 			@Override
-			public boolean onItemLongClick(AdapterView<?> parent, View view,
-					int position, long id) {
-				Toast.makeText(SearchListActivity.this,
-						"Long Press detected",
-						Toast.LENGTH_LONG).show();
+			public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
+				Toast.makeText(SearchListActivity.this, "Long Press detected", Toast.LENGTH_LONG).show();
 				return false;
 			}
 		});
-		
+
 		lv.setOnItemClickListener(new OnItemClickListener() {
 
 			@Override
-			public void onItemClick(AdapterView<?> parent, View view,
-					int position, long id) {
+			public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 
-				
 				SearchListActivity.this.showDetail(position);
-				
-
 
 			}
 		});
-		
+
 		mSettings = getSharedPreferences(SHARED_PREFERENCES_NAME, 0);
 		setAccountName(mSettings.getString(PREF_ACCOUNT_NAME, null));
-		
-		Pickupsports.Builder builder = new Pickupsports.Builder(AndroidHttp.newCompatibleTransport(), new GsonFactory(), mCredential);
-		mService = builder.build();
-		
-		if (mCredential.getSelectedAccountName() == null){
-			chooseAccount();
-		}
-		
-		loadProfile();
-		
-		loadList();
-		
-	}
 
+		Pickupsports.Builder builder = new Pickupsports.Builder(AndroidHttp.newCompatibleTransport(), new GsonFactory(),
+				mCredential);
+		mService = builder.build();
+
+		if (mCredential.getSelectedAccountName() == null) {
+			chooseAccount();
+			setAccountName(mSettings.getString(PREF_ACCOUNT_NAME, null));
+			Log.d(PS, "Using account name (from inside if statement) = " + mCredential.getSelectedAccountName());
+
+		}
+
+		loadProfile();
+		//
+		loadList();
+
+	}
 
 	private void loadFilters() {
 
-		
 		String[] arr = getResources().getStringArray(R.array.sport_list);
 		for (int i = 0; i < arr.length; i++) {
 			this.filters.add(arr[i]);
 			this.enabledFilters.add(true);
 		}
-		
+
 	}
 
-
 	@Override
-	protected void onRestart(){
+	protected void onRestart() {
 		super.onRestart();
 		loadList();
 	}
@@ -154,16 +154,15 @@ public class SearchListActivity extends Activity {
 	}
 
 	private void loadList() {
-		
+
 		(new QueryForEventsTask()).execute();
 	}
 
-
-		private void reload() {
-			adapter = new ListAdapter(this,(ArrayList<Sport>) events);
-			adapter.notifyDataSetChanged();
-			lv.setAdapter(adapter);
-		} 
+	private void reload() {
+		adapter = new ListAdapter(this, (ArrayList<Sport>) events);
+		adapter.notifyDataSetChanged();
+		lv.setAdapter(adapter);
+	}
 
 	private void setAccountName(String accountName) {
 		SharedPreferences.Editor editor = mSettings.edit();
@@ -171,13 +170,29 @@ public class SearchListActivity extends Activity {
 		editor.commit();
 		mCredential.setSelectedAccountName(accountName);
 	}
-	
+
 	void chooseAccount() {
 		// This picker is built in to the Android framework.
 		startActivityForResult(mCredential.newChooseAccountIntent(), REQUEST_ACCOUNT_PICKER);
 	}
-		
-	//menu
+
+	@Override
+	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+		super.onActivityResult(requestCode, resultCode, data);
+		switch (requestCode) {
+		case REQUEST_ACCOUNT_PICKER:
+			if (data != null && data.getExtras() != null) {
+				String accountName = data.getExtras().getString(AccountManager.KEY_ACCOUNT_NAME);
+				if (accountName != null) {
+					setAccountName(accountName); // User is authorized.
+					loadList();
+				}
+			}
+			break;
+		}
+	}
+
+	// menu
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		// Inflate the menu; this adds items to the action bar if it is present.
@@ -191,7 +206,7 @@ public class SearchListActivity extends Activity {
 		// automatically handle clicks on the Home/Up button, so long
 		// as you specify a parent activity in AndroidManifest.xml.
 		int id = item.getItemId();
-	
+
 		switch (id) {
 		case R.id.add_new_event_button:
 			Intent intent = new Intent(this, CreateEventActivity.class);
@@ -206,291 +221,269 @@ public class SearchListActivity extends Activity {
 		case R.id.change_location:
 			showChangeLocation();
 			break;
-        case R.id.profile:
-            Intent intentProfile = new Intent(this, ProfileActivity.class);
-            startActivity(intentProfile);
-            break;
+		case R.id.profile:
+			Intent intentProfile = new Intent(this, ProfileActivity.class);
+			startActivity(intentProfile);
+			break;
 		case R.id.help:
 			showHelp();
 			break;
+		case R.id.user:
+			chooseAccount();
+			break;
 		}
-		
-		
-		
+
 		return super.onOptionsItemSelected(item);
 	}
 
 	protected void showDetail(int position) {
-		
-		
-		currentEvent = (Sport) adapter.getItem(position);
-		
-		DialogFragment df = new DialogFragment() {
-			
 
-			
+		currentEvent = (Sport) adapter.getItem(position);
+
+		DialogFragment df = new DialogFragment() {
+
 			@Override
 			public Dialog onCreateDialog(Bundle savedInstanceState) {
-				AlertDialog.Builder builder = new AlertDialog.Builder(
-						getActivity());
+				AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
 				LayoutInflater inflater = getActivity().getLayoutInflater();
 				View view = inflater.inflate(R.layout.event_detail, null);
-				((TextView) view.findViewById(R.id.detail_sport)).setText(SearchListActivity.this.currentEvent.getName());
-				((TextView) view.findViewById(R.id.detail_desc)).setText(SearchListActivity.this.currentEvent.getDescription());
-				((TextView) view.findViewById(R.id.detail_avail)).setText(SearchListActivity.this.currentEvent.getAvailability());
-				String dateTime =SearchListActivity.this.currentEvent.getDate();
+				((TextView) view.findViewById(R.id.detail_sport))
+						.setText(SearchListActivity.this.currentEvent.getName());
+				((TextView) view.findViewById(R.id.detail_desc))
+						.setText(SearchListActivity.this.currentEvent.getDescription());
+				((TextView) view.findViewById(R.id.detail_avail))
+						.setText(SearchListActivity.this.currentEvent.getAvailability());
+				String dateTime = SearchListActivity.this.currentEvent.getDate();
 				String date = dateTime.split("T")[0];
 				String year = date.split("-")[0];
 				int month = Integer.parseInt(date.split("-")[1]) + 1;
 				String day = date.split("-")[2];
-				date = year + "-" +  month + "-" + day;
+				date = year + "-" + month + "-" + day;
 				String time = dateTime.split("T")[1];
 				time = time.split(":")[0] + ":" + time.split(":")[1];
 				dateTime = date + " " + time;
 				((TextView) view.findViewById(R.id.detail_date)).setText(dateTime);
-				((TextView) view.findViewById(R.id.detail_loc)).setText(SearchListActivity.this.currentEvent.getLocation());
+				((TextView) view.findViewById(R.id.detail_loc))
+						.setText(SearchListActivity.this.currentEvent.getLocation());
 				builder.setView(view);
-				builder.setNegativeButton(R.string.cancel_string,
-						new DialogInterface.OnClickListener() {
-							@Override
-							public void onClick(DialogInterface dialog,
-									int which) {
-								dismiss();
-							}
-						});
+				builder.setNegativeButton(R.string.cancel_string, new DialogInterface.OnClickListener() {
+					@Override
+					public void onClick(DialogInterface dialog, int which) {
+						dismiss();
+					}
+				});
 				builder.setNeutralButton("Get Directions!", new DialogInterface.OnClickListener() {
-							@Override
-							public void onClick(DialogInterface dialog,
-									int which) {
-								String destLat = currentEvent.getLatLon().split(":")[0];
-								String destLon = currentEvent.getLatLon().split(":")[1];
-								Intent intent = new Intent(android.content.Intent.ACTION_VIEW, 
-									    Uri.parse("http://maps.google.com/maps?saddr=" + lat + "," + lon + "&daddr=" + destLat + "," + destLon));
-									startActivity(intent);
-								
+					@Override
+					public void onClick(DialogInterface dialog, int which) {
+						String destLat = currentEvent.getLatLon().split(":")[0];
+						String destLon = currentEvent.getLatLon().split(":")[1];
+						Intent intent = new Intent(android.content.Intent.ACTION_VIEW,
+								Uri.parse("http://maps.google.com/maps?saddr=" + lat + "," + lon + "&daddr=" + destLat
+										+ "," + destLon));
+						startActivity(intent);
+
+					}
+				});
+				builder.setPositiveButton(R.string.event_accept, new DialogInterface.OnClickListener() {
+					@Override
+					public void onClick(DialogInterface dialog, int which) {
+						Toast.makeText(SearchListActivity.this, "Interesting!", Toast.LENGTH_LONG).show();
+
+						SearchListActivity.this.toggleInterest();
+						SearchListActivity.this.reload();
+
+						if (mProfile == null) {
+							Intent intent = new Intent(getBaseContext(), CreateProfileActivity.class);
+							startActivity(intent);
+						} else{
+							List<String> PEList = mProfile.getEvents();
+							if (PEList == null){
+								PEList = new ArrayList<String>();
 							}
-						});
-				builder.setPositiveButton(R.string.event_accept,
-						new DialogInterface.OnClickListener() {
-							@Override
-							public void onClick(DialogInterface dialog,
-									int which) {
-								Toast.makeText(SearchListActivity.this,
-										"Interesting!", Toast.LENGTH_LONG).show();
-								
-								SearchListActivity.this.toggleInterest();
-								SearchListActivity.this.reload();
-								
-								if (mProfile == null){
-									Intent intent = new Intent(getBaseContext(), CreateProfileActivity.class);
-									startActivity(intent);
-								}
-								
-								dismiss();
+							if (!PEList.contains(currentEvent.getEntityKey())){
+								PEList.add(currentEvent.getEntityKey());
 							}
-						});
+							mProfile.setEvents(PEList);
+							
+							(new UpdateProfileTask()).execute(mProfile);
+						}
+
+						dismiss();
+					}
+				});
 				return builder.create();
 			}
 		};
-		
-
-
 
 		df.show(getFragmentManager(), "showDetail");
 	}
 
-
 	protected void toggleInterest() {
-//		int index = this.events.indexOf(currentEvent);
-//		events.get(index).setInterested(!currentEvent.isInterested());
-		
+		// int index = this.events.indexOf(currentEvent);
+		// events.get(index).setInterested(!currentEvent.isInterested());
+
 		// add this back in next sprint
 	}
 
-
-
-
-
-
 	private void showSetFilters() {
-		DialogFragment df = new DialogFragment(){
+		DialogFragment df = new DialogFragment() {
 			@Override
 			public Dialog onCreateDialog(Bundle savedInstanceState) {
-				AlertDialog.Builder builder = new AlertDialog.Builder(
-						getActivity());
+				AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
 				builder.setTitle(R.string.set_filters_string);
 				boolean[] array = new boolean[enabledFilters.size()];
 				for (int i = 0; i < enabledFilters.size(); i++) {
 					array[i] = enabledFilters.get(i);
 				}
-				builder.setMultiChoiceItems(R.array.sport_list,array, new OnMultiChoiceClickListener() {
-					
+				builder.setMultiChoiceItems(R.array.sport_list, array, new OnMultiChoiceClickListener() {
 
 					@Override
-					public void onClick(DialogInterface dialog, int which,
-							boolean isChecked) {
+					public void onClick(DialogInterface dialog, int which, boolean isChecked) {
 						enabledFilters.set(which, isChecked);
-						
+
 					}
 				});
-				builder.setPositiveButton(android.R.string.ok,
-						new DialogInterface.OnClickListener() {
-							@Override
-							public void onClick(DialogInterface dialog,
-									int which) {
-								Toast.makeText(SearchListActivity.this,
-										"Filters Set!", Toast.LENGTH_LONG).show();
-								dismiss();
-								loadList();
-							}
-						});
+				builder.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+					@Override
+					public void onClick(DialogInterface dialog, int which) {
+						Toast.makeText(SearchListActivity.this, "Filters Set!", Toast.LENGTH_LONG).show();
+						dismiss();
+						loadList();
+					}
+				});
 				return builder.create();
 			}
 		};
 		df.show(getFragmentManager(), "");
-		
+
 	}
-
-
 
 	private void showSetRadius() {
-				DialogFragment df = new DialogFragment() {
+		DialogFragment df = new DialogFragment() {
+			@Override
+			public Dialog onCreateDialog(Bundle savedInstanceState) {
+				AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+				LayoutInflater inflater = getActivity().getLayoutInflater();
+				View view = inflater.inflate(R.layout.set_radius, null);
+				builder.setView(view);
+				final EditText text = (EditText) view.findViewById(R.id.set_rad_edit_text);
+				builder.setNegativeButton(R.string.cancel_string, new DialogInterface.OnClickListener() {
 					@Override
-					public Dialog onCreateDialog(Bundle savedInstanceState) {
-						AlertDialog.Builder builder = new AlertDialog.Builder(
-								getActivity());
-						LayoutInflater inflater = getActivity().getLayoutInflater();
-						View view = inflater.inflate(R.layout.set_radius, null);
-						builder.setView(view);
-						final EditText text = (EditText)view.findViewById(R.id.set_rad_edit_text);
-						builder.setNegativeButton(R.string.cancel_string,
-								new DialogInterface.OnClickListener() {
-									@Override
-									public void onClick(DialogInterface dialog,
-											int which) {
-										dismiss();
-									}
-								});
-						builder.setPositiveButton(android.R.string.ok,
-								new DialogInterface.OnClickListener() {
-									@Override
-									public void onClick(DialogInterface dialog,
-											int which) {
-										
-										radius = Integer.parseInt(text.getText().toString());
-										loadList();
-										dismiss();
-									}
-								});
-						return builder.create();
+					public void onClick(DialogInterface dialog, int which) {
+						dismiss();
 					}
-				};
-				df.show(getFragmentManager(), "setRadius");
+				});
+				builder.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+					@Override
+					public void onClick(DialogInterface dialog, int which) {
+
+						radius = Integer.parseInt(text.getText().toString());
+						loadList();
+						dismiss();
+					}
+				});
+				return builder.create();
+			}
+		};
+		df.show(getFragmentManager(), "setRadius");
 	}
-
-
 
 	private void showChangeLocation() {
 		DialogFragment df = new DialogFragment() {
 			@Override
 			public Dialog onCreateDialog(Bundle savedInstanceState) {
-				AlertDialog.Builder builder = new AlertDialog.Builder(
-						getActivity());
+				AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
 				LayoutInflater inflater = getActivity().getLayoutInflater();
 				View view = inflater.inflate(R.layout.change_location, null);
 				final EditText address = (EditText) view.findViewById(R.id.set_loc_edit_text);
 				builder.setView(view);
-				builder.setNegativeButton(R.string.cancel_string,
-						new DialogInterface.OnClickListener() {
-							@Override
-							public void onClick(DialogInterface dialog,
-									int which) {
-								dismiss();
-							}
-						});
-				builder.setPositiveButton(android.R.string.ok,
-						new DialogInterface.OnClickListener() {
-							@Override
-							public void onClick(DialogInterface dialog,
-									int which) {
-								(new GenerateLatLon()).execute(address.getText().toString());
-								dismiss();
-							}
-						});
+				builder.setNegativeButton(R.string.cancel_string, new DialogInterface.OnClickListener() {
+					@Override
+					public void onClick(DialogInterface dialog, int which) {
+						dismiss();
+					}
+				});
+				builder.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+					@Override
+					public void onClick(DialogInterface dialog, int which) {
+						(new GenerateLatLon()).execute(address.getText().toString());
+						dismiss();
+					}
+				});
 				return builder.create();
 			}
 		};
 		df.show(getFragmentManager(), "changeLocation");
 	}
 
-
-
 	private void showHelp() {
 		DialogFragment df = new DialogFragment() {
 			@Override
 			public Dialog onCreateDialog(Bundle savedInstanceState) {
-				AlertDialog.Builder builder = new AlertDialog.Builder(
-						getActivity());
+				AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
 				builder.setTitle(R.string.about_title);
 				builder.setMessage(R.string.about_message);
 				builder.setIcon(android.R.drawable.ic_menu_help);
-				builder.setPositiveButton(android.R.string.ok,
-						new DialogInterface.OnClickListener() {
+				builder.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
 
-							@Override
-							public void onClick(DialogInterface dialog,
-									int which) {
-								dismiss();
-							}
-						});
+					@Override
+					public void onClick(DialogInterface dialog, int which) {
+						dismiss();
+					}
+				});
 				return builder.create();
 			}
 		};
 		df.show(getFragmentManager(), "help");
-		
+
 	}
-	
-	
-	
-	class QueryForEventsTask extends AsyncTask<Void, Void, SportCollection>{
+
+	class QueryForEventsTask extends AsyncTask<Void, Void, SportCollection> {
 		SportCollection sports = null;
+
 		@Override
 		protected SportCollection doInBackground(Void... params) {
 			try {
-				com.appspot.horton_mcnelly_pickup_sports.pickupsports.Pickupsports.Sport.List query = mService.sport().list();
+				Log.d(PS, "Using account name = " + mCredential.getSelectedAccountName());
+
+				com.appspot.horton_mcnelly_pickup_sports.pickupsports.Pickupsports.Sport.List query = mService.sport()
+						.list();
 				query.setLimit(50L);
-				query.setOrder("name");//add filter to sort by distance as well. Next sprint.
+				query.setOrder("name");// add filter to sort by distance as
+										// well. Next sprint.
 				sports = query.execute();
 			} catch (IOException e) {
 				Log.e("PS", "Failed Loading " + e);
 			}
 			return sports;
 		}
+
 		@Override
 		protected void onPostExecute(SportCollection result) {
 			super.onPostExecute(result);
-			if (result == null){
+			if (result == null) {
 				Log.e("PS", "Result failed, null");
-			}else{
+			} else {
 				events.clear();
 				List<Sport> allResults = result.getItems();
 				for (Sport sport : allResults) {
-					if(getDistance(sport.getLatLon()) <= radius && isEnabled(sport.getName()) && isNotExpired(sport.getDate())){
+					if (getDistance(sport.getLatLon()) <= radius && isEnabled(sport.getName())
+							&& isNotExpired(sport.getDate())) {
 						events.add(sport);
 					}
 				}
-				
+
 				reload();
 			}
 		}
 	}
 
-	private double[] getGPSLoc(){
+	private double[] getGPSLoc() {
 		LocationManager locMan = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
 		List<String> providers = locMan.getProviders(true);
 		Location loc = null;
-		
-		for (int i = providers.size()-1; i >= 0; i--) {
+
+		for (int i = providers.size() - 1; i >= 0; i--) {
 			loc = locMan.getLastKnownLocation(providers.get(i));
 			if (loc != null) {
 				break;
@@ -504,7 +497,6 @@ public class SearchListActivity extends Activity {
 		return gps;
 	}
 
-
 	public boolean isNotExpired(String date) {
 		Date currentDate = new Date(System.currentTimeMillis());
 		int year = Integer.parseInt(date.split("T")[0].split("-")[0]);
@@ -514,7 +506,6 @@ public class SearchListActivity extends Activity {
 		int minute = Integer.parseInt(date.split("T")[1].split(":")[1]);
 		Calendar c = Calendar.getInstance();
 		c.set(year, month, day, hour, minute);
-		
 
 		Date checkDate = c.getTime();
 
@@ -524,133 +515,159 @@ public class SearchListActivity extends Activity {
 		return true;
 	}
 
-
 	public boolean isEnabled(String name) {
 		return enabledFilters.get(filters.indexOf(name));
 	}
-
 
 	public static int getDistance(String location) {
 		String[] latLon = location.split(":");
 		double latitude = Double.parseDouble(latLon[0]);
 		double longitude = Double.parseDouble(latLon[1]);
-		
+
 		return (int) haversine(lat, lon, latitude, longitude);
 	}
 
-
-	private static double haversine(double lat1, double lon1, double lat2,
-			double lon2) {
+	private static double haversine(double lat1, double lon1, double lat2, double lon2) {
 		double dLat = Math.toRadians(lat2 - lat1);
 		double dLon = Math.toRadians(lon2 - lon1);
 		lat1 = Math.toRadians(lat1);
 		lat2 = Math.toRadians(lat2);
-		double a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.sin(dLon/2) * Math.sin(dLon/2) * Math.cos(lat1) * Math.cos(lat2);
-		double c = 2* Math.asin(Math.sqrt(a));
+		double a = Math.sin(dLat / 2) * Math.sin(dLat / 2)
+				+ Math.sin(dLon / 2) * Math.sin(dLon / 2) * Math.cos(lat1) * Math.cos(lat2);
+		double c = 2 * Math.asin(Math.sqrt(a));
 		double finalResult = RADIUS * c * TO_MILES;
 		Log.d("PS", "DISTANCE: " + finalResult);
 		return finalResult;
 	}
-	
-	 class GenerateLatLon extends AsyncTask<String, Void, String>{
 
-			@Override
-			protected String doInBackground(String... params) {
-				try{
-					String address = params[0];
-					Log.d("PS", "address is: " + address);
-		    		//Toast.makeText(CreateEventActivity.this, "Generating Lat Lon", Toast.LENGTH_SHORT).show();
-		    		HttpGet getmethod = new HttpGet(SearchListActivity.BASE_URL + "?address=" + address.replace(' ', '+'));
-		    		Log.d("PS", "created getmethod: ");
-		    		org.apache.http.HttpResponse httpResponse = new DefaultHttpClient().execute(getmethod);
-		    		Log.d("PS", "executed get method");
-		    		int res = httpResponse.getStatusLine().getStatusCode();
-		    		Log.d("PS", "status code: " + res);
-		    		if (res == 200){
-		    			StringBuilder build = new StringBuilder();
-		    			BufferedReader read = new BufferedReader(new InputStreamReader(httpResponse.getEntity().getContent()));
-		    			for (String s = read.readLine(); s!= null; s = read.readLine()) {
-		    				build.append(s);
-		    			}
-		    			
-		    			String result = build.toString();
-		    			// Generating the lat and long from the JSON result
-		    		
-		    			String returnResult = "";
-		    			String lat = "";
-		    			String lon = "";
-		    			JSONObject obj = new JSONObject(result);
-		    			try {
+	class GenerateLatLon extends AsyncTask<String, Void, String> {
 
-		    	            lat = ((JSONArray)obj.get("results")).getJSONObject(0)
-		    	                .getJSONObject("geometry").getJSONObject("location")
-		    	                .getDouble("lat") + "";
+		@Override
+		protected String doInBackground(String... params) {
+			try {
+				String address = params[0];
+				Log.d("PS", "address is: " + address);
+				// Toast.makeText(CreateEventActivity.this, "Generating Lat
+				// Lon", Toast.LENGTH_SHORT).show();
+				HttpGet getmethod = new HttpGet(SearchListActivity.BASE_URL + "?address=" + address.replace(' ', '+'));
+				Log.d("PS", "created getmethod: ");
+				org.apache.http.HttpResponse httpResponse = new DefaultHttpClient().execute(getmethod);
+				Log.d("PS", "executed get method");
+				int res = httpResponse.getStatusLine().getStatusCode();
+				Log.d("PS", "status code: " + res);
+				if (res == 200) {
+					StringBuilder build = new StringBuilder();
+					BufferedReader read = new BufferedReader(
+							new InputStreamReader(httpResponse.getEntity().getContent()));
+					for (String s = read.readLine(); s != null; s = read.readLine()) {
+						build.append(s);
+					}
 
-		    	            lon = ((JSONArray)obj.get("results")).getJSONObject(0)
-		    	                .getJSONObject("geometry").getJSONObject("location")
-		    	                .getDouble("lng") + "";
+					String result = build.toString();
+					// Generating the lat and long from the JSON result
 
-		    	            returnResult = lat + ":" + lon;
-		    	        } catch (JSONException e) {
-		    	            return "";
+					String returnResult = "";
+					String lat = "";
+					String lon = "";
+					JSONObject obj = new JSONObject(result);
+					try {
 
-		    	        }
-		    			
-		    			
-		    			Log.d("PS", "Final result is: " + returnResult);
-		    			//Toast.makeText(CreateEventActivity.this, "Lat Long was: " + result, Toast.LENGTH_SHORT).show();
-		    			return returnResult;
-		    		} 
-		    	}
-		    	catch(Exception e){
-		    		e.printStackTrace();
-		    		Log.e("PS", "ERROR   " + e.getStackTrace().toString());
-		    	}
-		    	return "";
-			}
-			
-			@Override
-			protected void onPostExecute(String result) {
-				super.onPostExecute(result);
-				if (result == null){
-					Log.e("PS", "Change Loc GenLatLon, res is null");
-				}else{
-					SearchListActivity.lat = Double.parseDouble(result.split(":")[0]);
-					SearchListActivity.lon = Double.parseDouble(result.split(":")[1]);
-					loadList();
+						lat = ((JSONArray) obj.get("results")).getJSONObject(0).getJSONObject("geometry")
+								.getJSONObject("location").getDouble("lat") + "";
+
+						lon = ((JSONArray) obj.get("results")).getJSONObject(0).getJSONObject("geometry")
+								.getJSONObject("location").getDouble("lng") + "";
+
+						returnResult = lat + ":" + lon;
+					} catch (JSONException e) {
+						return "";
+
+					}
+
+					Log.d("PS", "Final result is: " + returnResult);
+					// Toast.makeText(CreateEventActivity.this, "Lat Long was: "
+					// + result, Toast.LENGTH_SHORT).show();
+					return returnResult;
 				}
+			} catch (Exception e) {
+				e.printStackTrace();
+				Log.e("PS", "ERROR   " + e.getStackTrace().toString());
 			}
-	    	
-	    }
-	
-	 class QueryForProfileTask extends AsyncTask<Void, Void, ProfileCollection> {
-			ProfileCollection profile = null;
+			return "";
+		}
 
-			@Override
-			protected ProfileCollection doInBackground(Void... params) {
-				// TODO Auto-generated method stub
-				try {
-					Get query = mService.profile().get();
-					profile = query.execute();
-				} catch (IOException e) {
-					Log.e("PS", "Failed Loading " + e);
-				}
-				return profile;
+		@Override
+		protected void onPostExecute(String result) {
+			super.onPostExecute(result);
+			if (result == null) {
+				Log.e("PS", "Change Loc GenLatLon, res is null");
+			} else {
+				SearchListActivity.lat = Double.parseDouble(result.split(":")[0]);
+				SearchListActivity.lon = Double.parseDouble(result.split(":")[1]);
+				loadList();
 			}
+		}
 
-			@Override
-			protected void onPostExecute(ProfileCollection result) {
-				if (result == null) {
-					Log.e("PS", "Result failed, null");
-				} else {
-					List<com.appspot.horton_mcnelly_pickup_sports.pickupsports.model.Profile> allResults = result
-							.getItems();
+	}
+
+	class QueryForProfileTask extends AsyncTask<Void, Void, ProfileCollection> {
+		ProfileCollection profile = null;
+
+		@Override
+		protected ProfileCollection doInBackground(Void... params) {
+			// TODO Auto-generated method stub
+			try {
+				Get query = mService.profile().get();
+				profile = query.execute();
+			} catch (IOException e) {
+				Log.e("PS", "Failed Loading " + e);
+			}
+			return profile;
+		}
+
+		@Override
+		protected void onPostExecute(ProfileCollection result) {
+			if (result == null) {
+				Log.e("PS", "Result failed, null");
+			} else {
+				List<com.appspot.horton_mcnelly_pickup_sports.pickupsports.model.Profile> allResults = result
+						.getItems();
+				if (allResults != null) {
 					mProfile = allResults.get(0);
+					Log.d(PS, "current profile = " + mProfile);
 				}
 			}
 		}
-	
-	
-	
-	
+	}
+
+	class UpdateProfileTask extends AsyncTask<Profile, Void, Profile> {
+		@Override
+		protected void onPreExecute() {
+			Toast.makeText(SearchListActivity.this, "updating Profile!", Toast.LENGTH_LONG).show();
+		}
+
+		@Override
+		protected Profile doInBackground(Profile... params) {
+			Profile toReturn = null;
+			try {
+				toReturn = mService.profile().insert(params[0]).execute();
+			} catch (IOException e) {
+				Log.e("PS", "Failed Inserting " + e);
+			}
+			return toReturn;
+		}
+
+		@Override
+		protected void onPostExecute(Profile result) {
+			super.onPostExecute(result);
+			if (result == null) {
+				Log.e("PS", "Insert failed, res is null");
+			} else {
+				// Toast and Go back
+				Toast.makeText(SearchListActivity.this, "Added Event to Your Profile!", Toast.LENGTH_LONG).show();
+			}
+		}
+
+	}
+
 }

@@ -71,7 +71,7 @@ public class CreateEventActivity extends FragmentActivity implements View.OnClic
     
     
     
-    private Pickupsports mService;
+//    private Pickupsports mService;
     private boolean readyToPost = false;
 	private DateTime mDate;
         
@@ -96,8 +96,8 @@ public class CreateEventActivity extends FragmentActivity implements View.OnClic
         mButtonTime.setOnClickListener(this);
         mButtonSetAvail.setOnClickListener(this);
         mButtonSetDesc.setOnClickListener(this);
-        Pickupsports.Builder builder = new Pickupsports.Builder(AndroidHttp.newCompatibleTransport(), new GsonFactory(), null);
-		mService = builder.build();
+//        Pickupsports.Builder builder = new Pickupsports.Builder(AndroidHttp.newCompatibleTransport(), new GsonFactory(), null);
+//		mService = builder.build();
     }
 
     @Override
@@ -400,7 +400,7 @@ public class CreateEventActivity extends FragmentActivity implements View.OnClic
 		protected Sport doInBackground(Sport... params) {
 			Sport toReturn = null;
 			try {
-				toReturn = mService.sport().insert(params[0]).execute();
+				toReturn = SearchListActivity.mService.sport().insert(params[0]).execute();
 			} catch (IOException e) {
 				Log.e("PS", "Failed Inserting " + e);
 			}
